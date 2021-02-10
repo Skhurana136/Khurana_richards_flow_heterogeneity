@@ -69,14 +69,14 @@ for Reg, step in zip(Regimes, steps):
         a = scdict[t]['Anis']
         df, conctime, masstime, Velocity, head = uta.calcconcmasstime(t, h, a, gw, d, fpre, fsuf, yin, yout, xleft, xright, vars, gvarnames)
         print(np.mean(df[vely - 3, 1:, :, :]))
-        Time = np.where(np.round(conctime[:, yout, 0], 3) > 10)
-        Time2 = np.where(np.round(df[-1, :, 50, :], 3) > 10)
+        Time = np.where(np.round(conctime[:, yout, 0], 3) > 9)
+        Time2 = np.where(np.round(df[-1, :, 50, :], 3) > 9)
         s = step
         print(s * Time[0][0], s * Time2[0][0], initial, (s * Time[0][0]) / initial)
         breakthrough2.append([t, h, a, "Tracer", s*Time[0][0], (s*Time[0][0])/initial, r])
 
 data = pd.DataFrame(breakthrough2, columns = ["Trial", "Variance", "Anisotropy", "Chem", "Time", "fraction", "Regime"])
-f = r"X:/Richards_flow/Tracer_studies/tracer_equalfast_09112020.csv"
+f = r"X:/Richards_flow/Tracer_studies/tracer_29112020.csv"
 data.to_csv(f, sep = '\t')
         
 # plotting boxplots to see variance of breakthrough from homogeneous scenario
