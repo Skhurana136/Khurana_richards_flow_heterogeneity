@@ -47,7 +47,7 @@ velem = 0.01
 vbc = 0.3
 por = 0.2
 Regimes = ["Equal", "Fast", "Slow"]
-steps = [20*0.005, 5 * 0.0002, 100*0.01]
+steps = [20*0.005,  50 * 0.0002, 200*0.005]
 #steps = [500 * 0.005, 200*0.005, 500 * 0.0002]
 #Regimes = ["Slow", "Equal", "Fast"]
 
@@ -69,19 +69,55 @@ for Reg, step in zip(Regimes, steps):
         a = scdict[t]['Anis']
         df, conctime, masstime, Velocity, head = uta.calcconcmasstime(t, h, a, gw, d, fpre, fsuf, yin, yout, xleft, xright, vars, gvarnames)
         print(np.mean(df[vely - 3, 1:, :, :]))
-        Time = np.where(np.round(conctime[:, yout, 0], 3) > 9)
-        Time2 = np.where(np.round(df[-1, :, 50, :], 3) > 9)
+        Time = np.where(np.round(conctime[:, yout, 0], 3) > 10)
+        Time2 = np.where(np.round(df[-1, :, yout, :], 3) > 10)
         s = step
         print(s * Time[0][0], s * Time2[0][0], initial, (s * Time[0][0]) / initial)
-        breakthrough2.append([t, h, a, "Tracer", s*Time[0][0], (s*Time[0][0])/initial, r])
+        breakthrough2.append([t, h, a, "Tracer", s*Time[0][0], (s*Time[0][0])/initial, r, np.mean(df[vely - 3, 1:, :, :])])
 
-data = pd.DataFrame(breakthrough2, columns = ["Trial", "Variance", "Anisotropy", "Chem", "Time", "fraction", "Regime"])
-f = r"X:/Richards_flow/Tracer_studies/tracer_29112020.csv"
+data = pd.DataFrame(breakthrough2, columns = ["Trial", "Variance", "Anisotropy", "Chem", "Time", "fraction", "Regime", "Average_velocity"])
+f = r"X:/Richards_flow/Tracer_studies/tracer_09012021.csv"
 data.to_csv(f, sep = '\t')
         
 # plotting boxplots to see variance of breakthrough from homogeneous scenario
 tracerplot = gp.plot_tracer(f)
 tracerplot.savefig("X:/Richards_flow/Tracer_studies/tracer_breakthrough_impact.png", dpi = 300, pad_inches = 0.1, bbox_inches = 'tight')
+
+#SlowAR 38, 68, 69, 84 is too slow. Why?
+Trial = ["38", "68", "69", "84"]
+for Reg in ["Slow"]:
+    d = r"X:/Richards_flow/Tracer_studies/" + Reg + "AR/"
+    fpre = "RF-A"
+    count = 0
+    for j in range(len(Trial)):
+        df = np.load(d + fpre + str(Trial[j]) + fsuf + fpre + str(Trial[j]) + "_df.npy")
+        #        v1 = np.sqrt(np.square(df[2,-2,:,:]) + np.square(df[2,-2,:,:]))
+        #        v2 = np.sqrt(np.square(df[2,-1,:,:]) + np.square(df[2,-1,:,:]))
+        v1 = df[2, -2, :, :]
+        v2 = df[2, -1, :, :]
+        diff = (np.abs(v2 - v1)) * 100 / 0.00038
+        #        plt.figure()
+        #        sns.heatmap(diff)
+        #        plt.title(Trial[j])
+        #        plt.savefig(d+str(Trial[j])+"_diff_velocities_finergrid_100days.png",dpi = 300, pad_inches = 0)
+        arr = v1 == v2
+        if arr.any():
+            print(Trial[j], " steady")
+            count = count + 1
+        else:
+            print(Trial[j], np.max(np.abs(v2 - v1)), np.argmax(np.abs(v1 - v2)))
+    print(count)
+#Scenario 84 is not in steady state.
+#Visualize
+for Reg in ["Equal"]:
+    d = r"X:/Richards_flow/Tracer_studies/" + Reg + "AR/"
+    fpre = "RF-A"
+    count = 0
+    for j in range(len(Trial))[-1:]:
+        df = np.load(d + fpre + str(Trial[j]) + fsuf + fpre + str(Trial[j]) + "_df.npy")
+        for t in [1, -10, -1]:
+            plt.figure()
+            sns.heatmap(df[-1, t, :, :])
 
 #data_exploration of tracer studies
 import matplotlib.pyplot as plt
