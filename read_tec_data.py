@@ -21,46 +21,18 @@ Trial = list(t for t,values in scdict.items())
 
 # Reading and storing in numpy array
 for Regime in Regimes:
-    directory = "X:/Richards_flow/" + Regime + "AR_0/RF-A" #change directory as per flow regime
+    readdirectory = "X:/Richards_flow/" + Regime + "AR_0/RF-A" #change directory as per flow regime
+    writedirectory = "E:/Richards_flow/" + Regime + "AR_0/" #change directory as per flow regime
     for j in Trial:
         print(j)
-        fwithd = os.path.join(directory + str(j), filename) #complete path to file
+        fwithd = os.path.join(readdirectory + str(j), filename) #complete path to file
         print("Reading tech file....")
         size, steps, Headers, D = rdr.readTecfile(fwithd) #read the tec file
         print("Converting to array....")
         df = rdr.Convertetoarray(D, "tec", ynodes, horiznodes) #Convert the coarse grid in to 51x31 array
         print("Saving numpy array....") 
-        np.save(os.path.join(directory + str(j)), "RF-A"+j +  "_df", df)
+        np.save(os.path.join(writedirectory, Regime + "AR_0_RF-A"+j +  "_df"), df)
         # Test for correct orientation of the data
         for i in range(np.shape(df)[0]):
             print(Headers[i + 3], np.mean(df[i, -1, 0, :]))
         print(np.mean(df[2, -1, :, :]))
-
-for Regime in Regimes:
-    directory = "X:/Richards_flow/Tracer_studies/" + Regime + "AR_eve/" + fpre #change directory as per flow regime
-    for j in list(scdict.keys()):
-        print(j)
-        fwithd = directory + j + fsuf + filename #complete path to file
-        print("Reading tech file....")
-        size, steps, Headers, D = rdr.readTecfile(fwithd) #read the tec file
-        print("Converting to array....")
-        df = rdr.Convertetoarray(D, "tec", 51, horiznodes) #Convert the coarse grid in to 51x31 array
-        print("Saving numpy array....") 
-        np.save(directory + j + fsuf + fpre + j +  "_df", df)
-        # Test for correct orientation of the data
-        for i in range(np.shape(df)[0]):
-            print(Headers[i + 3], np.mean(df[i, -1, 0, :]))
-            print(np.mean(df[2, -1, :, :]))
-
-
-def file(j):
-    fwithd = directory + j + fsuf + filename #complete path to file
-    print("Reading tech file....")
-    size, steps, Headers, D = rdr.readTecfile(fwithd) #read the tec file
-    print("Converting to array....")
-    df = rdr.Convertetoarray(D, "tec", domainodes[dom]['ynodes'], horiznodes) #Convert the coarse grid in to 51x31 array
-    print("Saving numpy array....") 
-    # Test for correct orientation of the data
-    for i in range(np.shape(df)[0]):
-        print(Headers[i + 3], np.mean(df[i, -1, 0, :]))
-    print(np.mean(df[2, -1, :, :]))
