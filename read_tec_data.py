@@ -20,10 +20,11 @@ filename = "model_domain_quad.tec" #same filename in each subfolder
 Trial = list(t for t,values in scdict.items())
 
 # Reading and storing in numpy array
-for Regime in Regimes:
-    readdirectory = "X:/Richards_flow/" + Regime + "AR_0/RF-A" #change directory as per flow regime
-    writedirectory = "E:/Richards_flow/" + Regime + "AR_0/" #change directory as per flow regime
-    for j in Trial:
+for Regime in Regimes[-1:]:
+    readdirectory = "X:/Richards_flow_low_sat/" + Regime + "AR_0/RF-A" #change directory as per flow regime
+    #writedirectory = "E:/Richards_flow/" + Regime + "AR_0/" #change directory as per flow regime
+    writedirectory = "X:/Richards_flow_low_sat/" + Regime + "AR_0/" #change directory as per flow regime
+    for j in Trial[:-1]:
         print(j)
         fwithd = os.path.join(readdirectory + str(j), filename) #complete path to file
         print("Reading tech file....")
