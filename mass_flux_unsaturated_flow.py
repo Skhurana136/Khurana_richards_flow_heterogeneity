@@ -9,10 +9,10 @@ import numpy as np
 import pandas as pd
 import data_reader.data_processing as proc
 import analyses.steady_state as ssa
-import analyses.saturated_transient as sta
+import analyses.transient as sta
 
 # Unsaturated flow regime
-Regimes = ["Equal", "Fast", "Slow"]
+Regimes = ["Medium", "Fast", "Slow"]
 #fpre = "RF-A"
 fsuf = r"/"
 gw = 0
@@ -21,13 +21,14 @@ gvarnames = ["DOC","DO","Nitrate", "Ammonium","Nitrogen", "TOC"]
 
 scdict = proc.masterscenarios() #master dictionary of all spatially heterogeneous scenarios that were run
 horiznodes = 31
-parent_dir = "E:/Richards_flow"
+parent_dir = "X:/Richards_flow_big_sat"
 # Default:
 Trial = list(t for t,values in scdict.items())
 
 # Constants
-yout = -1
+yout = -6
 yin = 0
+vertnodes = 63
 xleft = 0
 xright = -1
 vedge = 0.005
@@ -59,7 +60,7 @@ tr_data.columns
 #Merge the datasets and save
 cdata = pd.merge(massfluxdata, tr_data[["Trial", "Regime", "Time", "fraction"]], on = ["Regime", "Trial"])
 
-cdata.to_csv("Y:/Home/khurana/4. Publications/Paper3/Figurecodes/massflux_10022021.csv", sep = "\t", index=False)
+cdata.to_csv("Y:/Home/khurana/4. Publications/Paper3/Figurecodes/massflux_10052021.csv", index=False)
 
 row = []
 for Reg in Regimes:
@@ -67,13 +68,13 @@ for Reg in Regimes:
         directory =  os.path.join(parent_dir, Reg + "AR_0")
         filename = Reg+"AR_0_RF-A"+str(j)+"_df.npy"
         data = np.load(os.path.join(directory, filename))
-        conctime, TotalFlow, Headinlettime = sta.conc_time(data, yin, yout, xleft, xright, 51, gvarnames, "Unsaturated")
-        delconc = conctime[-1, 0, :] - conctime[-1,-1,:]
-        reldelconc = 100*delconc/conctime[-1,0,:]
-        normconc = conctime[-1,-1,:]/conctime[-1, 0, :]
+        conctime, TotalFlow, Headinlettime = sta.conc_time(data, yin, yout, xleft, xright, vertnodes, gvarnames, "Unsaturated")
+        delconc = conctime[-1, yin, :] - conctime[-1,yout,:]
+        reldelconc = 100*delconc/conctime[-1,yin,:]
+        normconc = conctime[-1,yout,:]/conctime[-1, yin, :]
         for g in gvarnames:
             print(Reg, j, g)
-            row.append([j,scdict[j]['Het'], scdict[j]['Anis'], Reg, g, conctime[-1,0,gvarnames.index(g)], conctime[-1,-1,gvarnames.index(g)],delconc[gvarnames.index(g)], reldelconc[gvarnames.index(g)], normconc[gvarnames.index(g)]])
+            row.append([j,scdict[j]['Het'], scdict[j]['Anis'], Reg, g, conctime[-1,yin,gvarnames.index(g)], conctime[-1,yout,gvarnames.index(g)],delconc[gvarnames.index(g)], reldelconc[gvarnames.index(g)], normconc[gvarnames.index(g)]])
 
 concdata = pd.DataFrame.from_records (row, columns = ["Trial", "Variance", "Anisotropy", "Regime", "Chem", "conc_in", "conc_out","delconc", "reldelconc", "normconc"])
 concdata.Regime = massfluxdata.Regime.replace({"Equal":"Medium"})
@@ -85,4 +86,4 @@ tr_data.columns
 #Merge the datasets and save
 cdata = pd.merge(concdata, tr_data[["Trial", "Regime", "Time", "fraction"]], on = ["Regime", "Trial"])
 
-cdata.to_csv("Y:/Home/khurana/4. Publications/Paper3/Figurecodes/concdata_10022021.csv", sep = "\t", index=False)
+cdata.to_csv("Y:/Home/khurana/4. Publications/Paper3/Figurecodes/concdata_10052021.csv", index=False)

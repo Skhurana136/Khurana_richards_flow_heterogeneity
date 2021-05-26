@@ -11,7 +11,7 @@ import data_reader.data_processing as proc
 import analyses.steady_state as ssa
 
 # Unsaturated flow regime
-Regimes = ["Equal", "Fast", "Slow"]
+Regimes = ["Medium", "Fast", "Slow"]
 #fpre = "RF-A"
 fsuf = r"/"
 gw = 0
@@ -20,13 +20,14 @@ gvarnames = list(t for t in species.keys() if (species[t]["State"]=="Active") or
 
 scdict = proc.masterscenarios() #master dictionary of all spatially heterogeneous scenarios that were run
 horiznodes = 31
-parent_dir = "E:/Richards_flow"
+parent_dir = "X:/Richards_flow_big_sat"
 # Default:
 Trial = list(t for t,values in scdict.items())
 
 # Constants
-yout = -1
-yin = 0
+yout = -6
+yin = 6
+vertnodes = 63
 xleft = 0
 xright = -1
 vedge = 0.005
@@ -56,4 +57,4 @@ tr_data.columns
 #Merge the datasets and save
 cdata = pd.merge(biomassdata, tr_data[["Trial", "Regime", "Time", "fraction"]], on = ["Regime", "Trial"])
 
-cdata.to_csv("Y:/Home/khurana/4. Publications/Paper3/Figurecodes/biomass_16022021.csv", sep = "\t", index=False)
+cdata.to_csv("Y:/Home/khurana/4. Publications/Paper3/Figurecodes/biomass_10052021.csv", index=False)

@@ -8,8 +8,8 @@ Created on Thu Sep  3 12:05:06 2020
 import pandas as pd
 
 #Load data
-path_data = "Y:/Home/khurana/4. Publications/Paper3/Figurecodes/biomass_16022021.csv"
-data = pd.read_csv(path_data, sep = "\t")
+path_data = "Y:/Home/khurana/4. Publications/Paper3/Figurecodes/biomass_10052021.csv"
+data = pd.read_csv(path_data)
 data.columns
 data.dtypes
 
@@ -38,4 +38,4 @@ data['biomass_spatial_fraction'] = data['Biomass']/data['spatial_biomass_base']
 #data['reldelmassflux_temporal_fraction'] = data['reldelmassflux']/data['temporal_reldelmassflux_base']
 data['biomass_contribution_spatial_fraction'] = data['Biomass_contribution']/data['spatial_biomass_contribution_base']
 
-data.to_csv("Y:/Home/khurana/4. Publications/Paper3/Figurecodes/biomass_comparison_16022021.csv", sep ="\t", index = False)
+data.to_csv("Y:/Home/khurana/4. Publications/Paper3/Figurecodes/biomass_comparison_10052021.csv",index = False)
