@@ -1,0 +1,92 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*. 
+
+```{r}
+plot(cars)
+```
+
+Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
+
+When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Ctrl+Shift+K* to preview the HTML file).
+
+The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
+library(CoSMoS)
+## Case1:
+## You wish to generate 3 time series of size 1000 each
+## that follow the Generalized Gamma distribution with parameters
+## scale = 1, shape1 = 0.8, shape2 = 0.8
+## and autocorrelation structure the ParetoII
+## with parameters scale = 1 and shape = .75
+x <- generateTS(margdist = 'ggamma',
+margarg = list(scale = 1,
+shape1 = .8,
+shape2 = .8),
+acsvalue = acs(id = 'paretoII',
+t = 0:30,
+scale = 1,
+shape = .75),
+n = 1000,
+p = 30,
+TSn = 3)
+## see the results
+plot(x)
+
+## Case2:
+## You wish to generate time series the same distribution
+## and autocorrelations as is Case1 but intermittent
+## with probability zero equal to 90%
+y <- generateTS(margdist = 'ggamma',
+margarg = list(scale = 1,
+shape1 = .8,
+shape2 = .8),
+acsvalue = acs(id = 'paretoII',
+t = 0:30,
+scale = 1,
+shape = .75),
+p0 = .9,
+n = 1000,
+p = 30,
+TSn = 3)
+## see the results
+plot(y)
+
+## Case3:
+## You wish to generate a time series of size 1000
+## that follows the Beta distribution
+## (e.g., relative humidity ranging from 0 to 1)
+## with parameters shape1 = 0.8, shape2 = 0.8, is defined from 0 to 1
+## and autocorrelation structure the ParetoII
+## with parameters scale = 1 and shape = .75
+z <- generateTS(margdist = 'beta',
+margarg = list(shape1 = .6,
+shape2 = .8),
+distbounds = c(0, 1),
+acsvalue = acs(id = 'paretoII',
+t = 0:30,
+scale = 1,
+shape = .75),
+n = 1000,
+p = 20)
+## see the results
+plot(z)
+
+## Case4:
+## Same in previous case but now you provide specific
+## autocorrelation values for the first three lags,
+## ie.., lag 1 to 3 equal to 0.9, 0.8 and 0.7
+z <- generateTS(margdist = 'beta',
+margarg = list(shape1 = .6,
+shape2 = .8),
+distbounds = c(0, 1),
+acsvalue = c(1, .9, .8, .7),
+n = 1000,
+p = TRUE)
+## see the results
+plot(z)
+

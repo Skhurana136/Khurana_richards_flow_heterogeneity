@@ -11,9 +11,9 @@ import data_reader.reader as rdr
 import data_reader.data_processing as proc
 
 #directories
-parent_dir = "Z:/Richards_flow_tr"#big_sat"#"X:/Richards_flow_bot_sat"
+parent_dir = "X:/Richards_flow_big_sat"#"Z:/Richards_flow_tr"#big_sat"#"X:/Richards_flow_bot_sat"
 #set up basic constants 
-Regimes = ["Slow","Fast","Medium"]
+Regimes = ["Slow","Medium","Fast"]
 ynodes = 113
 horiznodes = 61
 
@@ -21,9 +21,10 @@ scdict = proc.masterscenarios("Unsaturated") #master dictionary of all spatially
 filename = "model_domain_quad.tec" #same filename in each subfolder
 Trial = list(t for t,values in scdict.items())
 
+Trial = ["118", "127","177"]
 droplist = []
 # Reading and storing in numpy array
-for Regime in Regimes:
+for Regime in Regimes[:1]:
     regdirectory =  os.path.join(parent_dir, Regime + "AR_0") #change directory as per flow regime
     for j in Trial:
         if j in droplist:
@@ -41,7 +42,8 @@ for Regime in Regimes:
                 # Test for correct orientation of the data
                 for i in range(np.shape(df)[0]):
                     print(Headers[i + 3], np.mean(df[i, -1, 0, :]))
-                print(np.mean(df[2, -1, :, :]))
+                if np.mean(df[2, -1, :, :])==0.0:
+                    print(Regime, j)
             except:
                 print(Regime + " " + j + " failed")
                 continue
