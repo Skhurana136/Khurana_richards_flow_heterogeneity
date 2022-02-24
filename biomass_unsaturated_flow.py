@@ -61,3 +61,28 @@ tr_data.columns
 cdata = pd.merge(biomassdata, tr_data[["Trial", "Regime", "Time", "fraction"]], on = ["Regime", "Trial"])
 
 cdata.to_csv(os.path.join(results_dir,"biomass_with_sat_26092021.csv"), index=False)
+
+row = []
+for Reg in Regimes:
+    for j in Trial:
+        directory =  os.path.join(parent_dir, Reg + "AR_0")
+        filename = Reg+"AR_0_RF-A"+str(j)+"_df.npy"
+        data = np.load(os.path.join(directory, filename))
+        sat = np.mean(data[4,-1,6:-6,:])
+        sumbio = ssa.sum_biomass(data, yin, yout, xleft, xright, gvarnames, "Unsaturated")
+        total = sum(sumbio)
+        for g in gvarnames:
+            print(Reg, j, g)
+            row.append([j,scdict[j]['Het'], scdict[j]['Anis'], Reg, g, sumbio[gvarnames.index(g)], sumbio[gvarnames.index(g)]/total, sat])
+
+biomassdata = pd.DataFrame.from_records (row, columns = ["Trial", "Variance", "Anisotropy", "Regime", "Chem", "Biomass", "Biomass_contribution", "Mean_saturation"])
+biomassdata.Regime = biomassdata.Regime.replace({"Equal":"Medium"})
+#Load tracer data
+path_tr_data = os.path.join(results_dir,"tracer_11062021.csv")
+tr_data = pd.read_csv(path_tr_data)
+tr_data.columns
+
+#Merge the datasets and save
+cdata = pd.merge(biomassdata, tr_data[["Trial", "Regime", "Time", "fraction"]], on = ["Regime", "Trial"])
+
+cdata.to_csv(os.path.join(results_dir,"biomass_with_sat_26092021.csv"), index=False)

@@ -46,7 +46,8 @@ print(chemdata.Regime.unique())
 biomass_vars = biomassdata.Chem.unique().tolist()
 biomass_vars = list(b for b in biomass_vars if "sulphate" not in b)
 print(biomass_vars)
-chem_vars = chemdata.Chem.unique().tolist()
+#chem_vars = chemdata.Chem.unique().tolist().remove("Nitrogen").remove("TOC")
+chem_vars = ["DOC", "DO", "Nitrate", "Ammonium"]
 print(chem_vars)
 regimes = chemdata.Regime.unique().tolist()
 color_scheme = {"Slow":"darkorange",
