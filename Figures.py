@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
 """
-Spyder Editor
-
-This is a temporary script file.
+This is a script file to generate graphics for a publication
+to be submitted to Vadose Zone Journal.
 """
-
+#%%
 #Native libraries
 import os
 
@@ -20,14 +19,15 @@ import matplotlib.lines as mlines
 import matplotlib.patches as mpatches
 
 #User libraries
-from data_reader import data_processing as proc
-from data_reader.data_processing import tracerstudies
-import analyses.transient as sta
+from DS.data_reader import data_processing as proc
+from DS.data_reader.data_processing import tracerstudies
+import DS.analyses.transient as sta
 
 #uss_raw_dir = "E:/Richards_flow/RF_big_sat_2"
 uss_dir = r"C:\Users\swami\OneDrive\Documents\Manuscripts\Paper3\Figurecodes"
 op_dir = r"C:\Users\swami\OneDrive\Documents\Manuscripts\Paper3\Figurecodes"
 
+#%%
 #Standard color and font options
 my_pal = {2:"indianred", 11:"g", 22:"steelblue", "DO":"indianred", "Nitrate":"g", "Ammonium":"steelblue",
           'Slow':"indianred", "Medium":"g", "Fast":"steelblue"}
@@ -96,11 +96,12 @@ unsat_sub = biomass_ratio_df[biomass_ratio_df.Sat<1]
 unsat_sub["eff_sat"] = unsat_sub.Sat/0.6 - 1/3
 marklist = ["o","^","s"]
 
+#%%
 fig, axes = plt.subplots(1,2, figsize = (7,3), sharex = True, sharey = True)
-sns.scatterplot(data = unsat_sub, x = "eff_sat", y = "State_Ratio", hue = "Regime",  hue_order = ["Fast","Slow", "Medium"],
+sns.scatterplot(data = unsat_sub, x = "eff_sat", y = "State_Ratio", hue = "Regime",  hue_order = ["Slow", "Medium", "Fast"],
                 style = "Regime", palette = my_pal, ax = axes.flat[0])
-sns.scatterplot(data = unsat_sub, x = "eff_sat", y = "Loc_Ratio", hue = "Regime", hue_order = ["Fast","Slow", "Medium"],
-                style = "Regime", palette = my_pal, ax = axes.flat[1], legend=False)
+sns.scatterplot(data = unsat_sub, x = "eff_sat", y = "Loc_Ratio", hue = "Regime", hue_order = ["Slow", "Medium", "Fast"],
+                style = "Regime",palette = my_pal, ax = axes.flat[1], legend=False)
 #axes.flat[0].set_xscale("log")
 #axes.flat[0].set_yscale("log")
 axes.flat[0].set_title("Ratio of active and\ninactive biomass", fontsize = 12)
@@ -110,14 +111,130 @@ axes.flat[1].set_ylabel("")
 axes.flat[0].set_xlabel("Mean saturation", fontsize = 12)
 axes.flat[1].set_xlabel("Mean saturation", fontsize = 12)
 axes.flat[0].legend(title="Flow regime", fontsize = 11, title_fontsize = 11)
-axes.flat[0].set_yticks((0.1,1,10),(0.1,1,10))
-axes.flat[0].set_xticks((0.45,0.5,0.55,0.6,0.65),(0.45,0.5,0.55,0.6,0.65))
-#axes.flat[1].set_xticks((0.45,0.5,0.55,0.6,0.65),(0.45,0.5,0.55,0.6,0.65))
 for a in axes[:]:
     a.tick_params(labelsize = 10)
-picname = os.path.join(op_dir,"Fig_4_5_Unsaturated_fractions_microbes.png")
+picname = os.path.join(op_dir,"Fig_5_Unsaturated_fractions_microbes.png")
 plt.savefig(picname, dpi = 300, bbox_inches = 'tight', pad_inches = 0.1)
 
+#%%
+my_pal = {3:"indianred", 2: "g", 0:"steelblue", 1 :"orange"}
+path_da_data= os.path.join(uss_dir, "Da_unsaturated.csv")
+unsat_da= pd.read_csv(path_da_data)
+
+gvarnames = ["DO", "Nitrate", "DOC", "Ammonium"]#, "Nitrogen", "TOC"]
+
+unsat_data = unsat_da[unsat_da['Chem'].isin (gvarnames)]
+unsat_data["logDa"] = np.log10(unsat_data.Da)
+
+unsat_data.loc[unsat_data["logDa"] < -1, "PeDamark"] = 0
+unsat_data.loc[(unsat_data["logDa"] > -1) & (unsat_data["logDa"] < 0), "PeDamark"] = 1
+unsat_data.loc[(unsat_data["logDa"] > 0) & (unsat_data["logDa"] <0.5), "PeDamark"] = 2
+unsat_data.loc[(unsat_data["logDa"] > 0.5), "PeDamark"] = 3
+
+labels = {3 : "log$_{10}$Da > 0.5",
+          2 : "0 < log$_{10}$Da < 0.5",
+          1 : "-1 < log$_{10}$Da < 0",
+         0 : "log$_{10}$Da < -1"}
+
+unsat_data["pc_reldelconc_spatial"] = unsat_data.reldelconc_spatial_fraction * 100
+
+markers = ["o", "s", "d", "^"]
+plt.figure()
+for frac in [1,2,3]:
+    subset = unsat_data[unsat_data['PeDamark'] == frac]
+    y = subset["pc_reldelconc_spatial"]
+    X = subset[["fraction"]]
+    plt.scatter(X*100, y, c = my_pal[frac], marker = markers[frac],alpha = 0.5, label = labels[frac])
+plt.xlabel ("Residence time of solutes (%)", **titlekw)
+plt.ylabel("Removal of reactive species (%)", ha='center', va='center', rotation='vertical', labelpad = 10, **titlekw)
+locs, labels1 = plt.yticks()
+#plt.yscale("log")
+plt.yticks((0,20,40,60,80,100,120, 140),(0,20,40,60,80,100,120, 140))
+plt.xticks((0,20,40,60,80,100),(0,20,40,60,80,100))
+plt.tick_params(**labelkw)
+plt.legend(title = "Reactive system", title_fontsize = 14, fontsize = 14, loc = (1.05,0.25))
+picname = os.path.join(op_dir,"Fig_4_Unsaturated_Da_removal_notblue.png")
+#plt.savefig(picname, dpi = 300, bbox_inches = 'tight', pad_inches = 0.1)
+#%%
+sat_file = os.path.join(uss_dir,"massflux_comparison_with_sat_26092021.csv")
+sat_data = pd.read_csv(sat_file)
+sat_data = sat_data.sort_values(by=["Variance", "Anisotropy"])
+sat_data["VA"] = sat_data["Variance"].astype(str) + ":" + sat_data["Anisotropy"].astype(int).astype(str)
+sat_data["fraction%"] = sat_data.fraction*100
+
+sat_data["eff_sat"] = 1*sat_data["Mean_saturation"]/0.6 -1/3
+
+fig, axmat = plt.subplots(2,1, figsize = (7,8), sharex = True)
+axes = axmat.flatten()
+sns.boxplot(data = sat_data, y = "eff_sat", x= "VA", hue ="Regime", hue_order = ["Slow", "Medium", "Fast"], palette = my_pal, ax = axes[0])
+axes[0].text(-0.2, 0.82, "A", fontsize = 16)
+axes[0].axhline(y=0.2, linestyle = ":", c = "grey")
+axes[0].text(11, 0.21, "Sr", fontsize = 10)
+axes[0].axhline(y=0.8, linestyle = ":", c = "grey")
+axes[0].text(11, 0.81, "Smax", fontsize = 10)
+axes[0].set_xlabel ("")
+axes[0].set_ylabel ("Mean saturation (-)", fontsize = 12)
+axes[0].set_ylim((0.1,0.9))
+axes[0].legend([], frameon=False)
+sns.boxplot(data = sat_data, y = "fraction%", x= "VA", hue ="Regime", hue_order = ["Slow", "Medium", "Fast"], palette = my_pal, ax = axes.flat[1])
+axes[1].set_xlabel ("Variance in log permeability field:Anisotropy", fontsize = 12)
+axes[1].set_ylabel ("Normalised breakthrough time (%)", fontsize = 12)
+axes[1].text(-0.2, 90, "B", fontsize = 16)
+xlocs, xlabels = plt.xticks()
+plt.xticks(xlocs, ["H", "0.1:2","0.1:5","0.1:10","1:2","1:5","1:10","5:10","5:2","5:5","10:2","10:5","10:10"])
+plt.gca().yaxis.set_major_formatter(mpl.ticker.StrMethodFormatter('{x:,.0f}'))
+plt.tick_params(labelsize = 12)
+plt.legend(title = 'Flow regime', fontsize = 12, title_fontsize = 12)
+picname = os.path.join(op_dir,"Fig_2_tracer_breakthrough.png")
+#plt.savefig(picname, dpi = 300, bbox_inches = 'tight', pad_inches = 0.01)
+#%%
+cv_file = os.path.join(uss_dir,"coeff_var.csv")
+cvdata_unsat = pd.read_csv(cv_file)
+#Plotting
+finaldata_unsat = cvdata_unsat
+fig, axes = plt.subplots(4,1, figsize = (4,6), sharex = True, sharey = 'row')
+for i,g in zip(list(range(4)),["DOC","DO","Nitrate","Ammonium"]):
+    subdata_unsat = finaldata_unsat[(finaldata_unsat.Chem==g)&(finaldata_unsat.Trial!='H')]
+    bxplot_unsat = sns.boxplot(x = 'Variance', y = 'cv', hue = 'Regime', hue_order = ["Slow", "Medium", "Fast"], palette = my_pal, 
+                data = subdata_unsat, ax = axes[i])
+    bxplot_unsat.get_legend().remove()
+    axes[i].set_ylabel(g, fontsize = 14)
+    axes[i].tick_params(labelsize=14)
+    if i<3:
+        for a in axes[:]:
+            a.set_xlabel(" ")
+    else:
+        axes[i].set_xlabel("Variance", fontsize = 14)
+        a.tick_params(labelsize=14)
+plt.subplots_adjust (top = 0.92)
+handles, labels = bxplot_unsat.get_legend_handles_labels()
+l = plt.legend(handles, labels, bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0., fontsize = 14, title_fontsize = 14, title = "Flow regime")
+picname = os.path.join(op_dir,"Fig_S2_cv_chem.png")
+plt.savefig(picname, dpi = 300, bbox_inches = 'tight', pad_inches = 0.01)
+
+species_text = "Immobile active "
+fig, axes = plt.subplots(3,1, figsize = (4,6), sharex = True, sharey = 'row')
+for i,g in zip(list(range(3)),["aerobic degraders","nitrate reducers","ammonia oxidizers"]):
+    subdata_unsat = finaldata_unsat[(finaldata_unsat.Chem==species_text + g)&(finaldata_unsat.Trial!='H')]
+    bxplot_unsat = sns.boxplot(x = 'Variance', y = 'cv', hue = 'Regime', hue_order = ["Slow", "Medium", "Fast"], palette = my_pal, 
+                data = subdata_unsat, ax = axes[i])
+    bxplot_unsat.get_legend().remove()
+    axes[i].set_ylabel(g, fontsize = 14)
+    axes[i].tick_params(labelsize=14)
+    if i<3:
+        for a in axes[:]:
+            a.set_xlabel(" ")
+    else:
+        axes[i].set_xlabel("Variance", fontsize = 14)
+        a.tick_params(labelsize=14)
+plt.subplots_adjust (top = 0.92)
+handles, labels = bxplot_unsat.get_legend_handles_labels()
+l = plt.legend(handles, labels, bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0., fontsize = 14, title_fontsize = 14, title = "Flow regime")
+picname = os.path.join(op_dir,"Fig_S7_cv_imm_active.png")
+plt.savefig(picname, dpi = 300, bbox_inches = 'tight', pad_inches = 0.01)
+
+#---EXTRA---###
+#%%
 fig, axes = plt.subplots(1,2, figsize = (7,3), sharex = True, sharey = True)
 sns.scatterplot(data = unsat_sub, x = "eff_sat", y = "Mass_Active", hue = "Regime",  hue_order = ["Fast","Slow", "Medium"],
                 style = "Regime", palette = my_pal, ax = axes.flat[0])
@@ -140,6 +257,7 @@ for a in axes[:]:
 #picname = os.path.join(op_dir,"Fig_4_5_Unsaturated_fractions_microbes.png")
 #plt.savefig(picname, dpi = 300, bbox_inches = 'tight', pad_inches = 0.1)
 
+#%%
 fig, axes = plt.subplots(1,2, figsize = (7,3), sharex = True, sharey = True)
 sns.scatterplot(data = unsat_sub, x = "eff_sat", y = "Mass_Immobile", hue = "Regime",  hue_order = ["Fast","Slow", "Medium"],
                 style = "Regime", palette = my_pal, ax = axes.flat[0])
@@ -197,98 +315,4 @@ plt.yscale("log")
 plt.tick_params(**labelkw)
 plt.legend(title = "Reactive system", title_fontsize = 14, fontsize = 14, loc = (1.05,0.25))
 picname = os.path.join(op_dir,"Fig_8_Unsaturated_Da_removal_all.png")
-plt.savefig(picname, dpi = 300, bbox_inches = 'tight', pad_inches = 0.1)
-
-plt.figure()
-for frac in [1,2,3]:
-    subset = unsat_data[unsat_data['PeDamark'] == frac]
-    y = subset["pc_reldelconc_spatial"]
-    X = subset[["fraction"]]
-    plt.scatter(X*100, y, c = my_pal[frac], marker = markers[frac],alpha = 0.5, label = labels[frac])
-plt.xlabel ("Residence time of solutes (%)", **titlekw)
-plt.ylabel("Removal of reactive species (%)", ha='center', va='center', rotation='vertical', labelpad = 10, **titlekw)
-locs, labels1 = plt.yticks()
-#plt.yscale("log")
-plt.yticks((0,20,40,60,80,100,120, 140),(0,20,40,60,80,100,120, 140))
-plt.xticks((0,20,40,60,80,100),(0,20,40,60,80,100))
-plt.tick_params(**labelkw)
-plt.legend(title = "Reactive system", title_fontsize = 14, fontsize = 14, loc = (1.05,0.25))
-picname = os.path.join(op_dir,"Fig_8_Unsaturated_Da_removal_notblue.png")
-plt.savefig(picname, dpi = 300, bbox_inches = 'tight', pad_inches = 0.1)
-
-sat_file = os.path.join(uss_dir,"massflux_comparison_with_sat_26092021.csv")
-sat_data = pd.read_csv(sat_file)
-sat_data = sat_data.sort_values(by=["Variance", "Anisotropy"])
-sat_data["VA"] = sat_data["Variance"].astype(str) + ":" + sat_data["Anisotropy"].astype(int).astype(str)
-sat_data["fraction%"] = sat_data.fraction*100
-
-sat_data["eff_sat"] = 1*sat_data["Mean_saturation"]/0.6 -1/3
-
-fig, axmat = plt.subplots(2,1, figsize = (7,8), sharex = True)
-axes = axmat.flatten()
-sns.boxplot(data = sat_data, y = "eff_sat", x= "VA", hue ="Regime", hue_order = ["Slow", "Medium", "Fast"], palette = my_pal, ax = axes[0])
-axes[0].text(-0.2, 0.82, "A", fontsize = 16)
-axes[0].axhline(y=0.2, linestyle = ":", c = "grey")
-axes[0].text(11, 0.21, "Sr", fontsize = 10)
-axes[0].axhline(y=0.8, linestyle = ":", c = "grey")
-axes[0].text(11, 0.81, "Smax", fontsize = 10)
-axes[0].set_xlabel ("")
-axes[0].set_ylabel ("Mean saturation (-)", fontsize = 12)
-axes[0].set_ylim((0.1,0.9))
-axes[0].legend([], frameon=False)
-sns.boxplot(data = sat_data, y = "fraction%", x= "VA", hue ="Regime", hue_order = ["Slow", "Medium", "Fast"], palette = my_pal, ax = axes.flat[1])
-axes[1].set_xlabel ("Variance in log permeability field:Anisotropy", fontsize = 12)
-axes[1].set_ylabel ("Normalised breakthrough time (%)", fontsize = 12)
-axes[1].text(-0.2, 90, "B", fontsize = 16)
-xlocs, xlabels = plt.xticks()
-plt.xticks(xlocs, ["H", "0.1:2","0.1:5","0.1:10","1:2","1:5","1:10","5:10","5:2","5:5","10:2","10:5","10:10"])
-plt.gca().yaxis.set_major_formatter(mpl.ticker.StrMethodFormatter('{x:,.0f}'))
-plt.tick_params(labelsize = 12)
-plt.legend(title = 'Flow regime', fontsize = 12, title_fontsize = 12)
-picname = os.path.join(op_dir,"Fig_2_tracer_breakthrough.png")
-plt.savefig(picname, dpi = 300, bbox_inches = 'tight', pad_inches = 0.01)
-
-cv_file = os.path.join(uss_dir,"coeff_var.csv")
-cvdata_unsat = pd.read_csv(cv_file)
-#Plotting
-finaldata_unsat = cvdata_unsat
-fig, axes = plt.subplots(4,1, figsize = (4,6), sharex = True, sharey = 'row')
-for i,g in zip(list(range(4)),["DOC","DO","Nitrate","Ammonium"]):
-    subdata_unsat = finaldata_unsat[(finaldata_unsat.Chem==g)&(finaldata_unsat.Trial!='H')]
-    bxplot_unsat = sns.boxplot(x = 'Variance', y = 'cv', hue = 'Regime', hue_order = ["Slow", "Medium", "Fast"], palette = my_pal, 
-                data = subdata_unsat, ax = axes[i])
-    bxplot_unsat.get_legend().remove()
-    axes[i].set_ylabel(g, fontsize = 14)
-    axes[i].tick_params(labelsize=14)
-    if i<3:
-        for a in axes[:]:
-            a.set_xlabel(" ")
-    else:
-        axes[i].set_xlabel("Variance", fontsize = 14)
-        a.tick_params(labelsize=14)
-plt.subplots_adjust (top = 0.92)
-handles, labels = bxplot_unsat.get_legend_handles_labels()
-l = plt.legend(handles, labels, bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0., fontsize = 14, title_fontsize = 14, title = "Flow regime")
-picname = os.path.join(op_dir,"Fig_S2_cv_chem.png")
-plt.savefig(picname, dpi = 300, bbox_inches = 'tight', pad_inches = 0.01)
-
-species_text = "Immobile active "
-fig, axes = plt.subplots(3,1, figsize = (4,6), sharex = True, sharey = 'row')
-for i,g in zip(list(range(3)),["aerobic degraders","nitrate reducers","ammonia oxidizers"]):
-    subdata_unsat = finaldata_unsat[(finaldata_unsat.Chem==species_text + g)&(finaldata_unsat.Trial!='H')]
-    bxplot_unsat = sns.boxplot(x = 'Variance', y = 'cv', hue = 'Regime', hue_order = ["Slow", "Medium", "Fast"], palette = my_pal, 
-                data = subdata_unsat, ax = axes[i])
-    bxplot_unsat.get_legend().remove()
-    axes[i].set_ylabel(g, fontsize = 14)
-    axes[i].tick_params(labelsize=14)
-    if i<3:
-        for a in axes[:]:
-            a.set_xlabel(" ")
-    else:
-        axes[i].set_xlabel("Variance", fontsize = 14)
-        a.tick_params(labelsize=14)
-plt.subplots_adjust (top = 0.92)
-handles, labels = bxplot_unsat.get_legend_handles_labels()
-l = plt.legend(handles, labels, bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0., fontsize = 14, title_fontsize = 14, title = "Flow regime")
-picname = os.path.join(op_dir,"Fig_S7_cv_imm_active.png")
-plt.savefig(picname, dpi = 300, bbox_inches = 'tight', pad_inches = 0.01)
+#plt.savefig(picname, dpi = 300, bbox_inches = 'tight', pad_inches = 0.1)
