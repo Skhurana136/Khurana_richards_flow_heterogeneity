@@ -23,14 +23,23 @@ from DS.data_reader import data_processing as proc
 from DS.data_reader.data_processing import tracerstudies
 import DS.analyses.transient as sta
 
-#uss_raw_dir = "E:/Richards_flow/RF_big_sat_2"
+#%%
+## directories for personal computer:
 uss_dir = r"C:\Users\swami\OneDrive\Documents\Manuscripts\Paper3\Figurecodes"
 op_dir = r"C:\Users\swami\OneDrive\Documents\Manuscripts\Paper3\Figurecodes"
+
+#%%
+## directories for work computer
+uss_dir = r"C:\Users\swkh9804\OneDrive\Documents\Manuscripts\Paper3\Figurecodes"
+op_dir = r"C:\Users\swkh9804\OneDrive\Documents\Manuscripts\Paper3\Figurecodes"
 
 #%%
 #Standard color and font options
 my_pal = {2:"indianred", 11:"g", 22:"steelblue", "DO":"indianred", "Nitrate":"g", "Ammonium":"steelblue",
           'Slow':"indianred", "Medium":"g", "Fast":"steelblue"}
+my_style = {'Slow':"o", "Medium":"^", "Fast":"s"}
+
+marklist = ["o", "s", "^","d"]
 legendkw = {'fontsize' : 14}
 labelkw = {'labelsize' : 14}
 secondlabelkw = {'labelsize' : 16}
@@ -94,25 +103,95 @@ print(biomass_ratio_df.head())
 
 unsat_sub = biomass_ratio_df[biomass_ratio_df.Sat<1]
 unsat_sub["eff_sat"] = unsat_sub.Sat/0.6 - 1/3
-marklist = ["o","^","s"]
 
+path_da_data= os.path.join(uss_dir, "Da_unsaturated.csv")
+unsat_da= pd.read_csv(path_da_data)
+
+#%%
+da_hom = unsat_da[unsat_da.Trial == "H"]
+print (da_hom.shape)
+plt.figure()
+sns.barplot(x = 'Chem', y = 'reldelconc', hue = 'Regime', hue_order= ['Slow', 'Medium','Fast'],
+palette= my_pal, data = da_hom[da_hom.Chem != "DO"])
+plt.xlabel ("Chemical species", **titlekw)
+plt.ylabel("Relative removal (%)", ha='center', va='center', rotation='vertical', labelpad = 10, **titlekw)
+plt.tick_params(**labelkw, rotation = 30)
+plt.legend(title = "Flow regime", title_fontsize = 14, fontsize = 14, loc = (1.05,0.25))
+picname = os.path.join(op_dir,"Fig_1_Chem_removal.png")
+plt.savefig(picname, dpi = 300, bbox_inches = 'tight', pad_inches = 0.01)
+
+#%%
+#%%
+aero_data_path = os.path.join(uss_dir, "DO_consumption_unsat_het.csv")
+aero_data = pd.read_csv (aero_data_path)
+print (aero_data.columns)
+aero_data['fraction%'] = aero_data.fraction*100
+fig, a = plt.subplots(1,2, figsize = (8,4), sharey = True)
+sns.scatterplot(x = 'Mean_saturation', y = 'DOrem_fraction%', hue = 'Regime',
+hue_order= ['Slow', 'Medium','Fast'], style = 'Regime',palette= my_pal, data = aero_data, ax = a[0])
+a[0].set_xlabel ("Mean saturation\nin domain", **titlekw)
+a[0].set_ylabel("Impact on microbial activity (%)", ha='center', va='center', rotation='vertical', labelpad = 10, **titlekw)
+a[0].legend().remove()
+sns.scatterplot(x = 'fraction%', y = 'DOrem_fraction%', hue = 'Regime',
+hue_order= ['Slow', 'Medium','Fast'], style = 'Regime',palette= my_pal, data = aero_data, ax = a[1])
+a[0].text(s="A", x = 0.45, y = 140, **titlekw)
+a[1].set_xlabel ("Residence time\nof solutes (%)", **titlekw)
+a[1].set_ylabel ("")
+a[0].tick_params(**labelkw)
+a[1].tick_params(**labelkw)
+a[1].text(s="B", x = 30, y = 140, **titlekw)
+plt.legend(title = "Flow regime", title_fontsize = 14, fontsize = 14, loc = (-0.9,-0.5), ncol = 3)
+picname = os.path.join(op_dir,"Fig_3_aerobic_activity_impact.png")
+plt.savefig(picname, dpi = 300, bbox_inches = 'tight', pad_inches = 0.01)
+#%%
+unsat_data = unsat_da[unsat_da['Chem'].isin (gvarnames)]
+unsat_data["logDa"] = np.log10(unsat_data.Da)
+
+unsat_data.loc[unsat_data["logDa"] < -1, "PeDamark"] = 0
+unsat_data.loc[(unsat_data["logDa"] > -1) & (unsat_data["logDa"] < 0), "PeDamark"] = 1
+unsat_data.loc[(unsat_data["logDa"] > 0) & (unsat_data["logDa"] <0.5), "PeDamark"] = 2
+unsat_data.loc[(unsat_data["logDa"] > 0.5), "PeDamark"] = 3
+
+labels = {3 : "log$_{10}$Da > 0.5",
+          2 : "0 < log$_{10}$Da < 0.5",
+          1 : "-1 < log$_{10}$Da < 0",
+         0 : "log$_{10}$Da < -1"}
+
+unsat_data["pc_reldelconc_spatial"] = unsat_data.reldelconc_spatial_fraction * 100
+
+for frac in [1,2,3]:
+    subset = unsat_data[unsat_data['PeDamark'] == frac]
+    y = subset["pc_reldelconc_spatial"]
+    X = subset[["fraction"]]
+    plt.scatter(X*100, y, c = my_pal[frac], marker = marklist[frac],alpha = 0.5, label = labels[frac])
+plt.xlabel ("Residence time of solutes (%)", **titlekw)
+plt.ylabel("Removal of reactive species (%)", ha='center', va='center', rotation='vertical', labelpad = 10, **titlekw)
+locs, labels1 = plt.yticks()
+#plt.yscale("log")
+plt.yticks((0,20,40,60,80,100,120, 140),(0,20,40,60,80,100,120, 140))
+plt.xticks((0,20,40,60,80,100),(0,20,40,60,80,100))
+plt.tick_params(**labelkw)
+plt.legend(title = "Reactive system", title_fontsize = 14, fontsize = 14, loc = (1.05,0.25))
+picname = os.path.join(op_dir,"Fig_4_Unsaturated_Da_removal_notblue.png")
+plt.savefig(picname, dpi = 300, bbox_inches = 'tight', pad_inches = 0.1)
 #%%
 fig, axes = plt.subplots(1,2, figsize = (7,3), sharex = True, sharey = True)
 sns.scatterplot(data = unsat_sub, x = "eff_sat", y = "State_Ratio", hue = "Regime",  hue_order = ["Slow", "Medium", "Fast"],
                 style = "Regime", palette = my_pal, ax = axes.flat[0])
 sns.scatterplot(data = unsat_sub, x = "eff_sat", y = "Loc_Ratio", hue = "Regime", hue_order = ["Slow", "Medium", "Fast"],
                 style = "Regime",palette = my_pal, ax = axes.flat[1], legend=False)
-#axes.flat[0].set_xscale("log")
-#axes.flat[0].set_yscale("log")
-axes.flat[0].set_title("Ratio of active and\ninactive biomass", fontsize = 12)
-axes.flat[1].set_title("Ratio of immobile and\nmobile biomass", fontsize = 12)
-axes.flat[0].set_ylabel("Ratio", fontsize = 12)
+axes.flat[0].set_title("Ratio of active and\ninactive biomass", **titlekw)
+axes.flat[1].set_title("Ratio of immobile and\nmobile biomass", **titlekw)
+axes.flat[0].set_ylabel("Ratio", **titlekw)
 axes.flat[1].set_ylabel("")
-axes.flat[0].set_xlabel("Mean saturation", fontsize = 12)
-axes.flat[1].set_xlabel("Mean saturation", fontsize = 12)
-axes.flat[0].legend(title="Flow regime", fontsize = 11, title_fontsize = 11)
+axes.flat[0].set_xlabel("Mean saturation", **titlekw)
+axes.flat[1].set_xlabel("Mean saturation", **titlekw)
+axes.flat[0].text(s="A", x = 0.4, y = 9, **titlekw)
+axes.flat[1].text(s="B", x = 0.4, y = 9, **titlekw)
+#axes.flat[1].tick_params(**labelkw)
+axes.flat[0].legend(title="Flow regime", fontsize = 14, title_fontsize = 14, loc = (0.33, -0.5), ncol = 3)
 for a in axes[:]:
-    a.tick_params(labelsize = 10)
+    a.tick_params(labelsize = 12)
 picname = os.path.join(op_dir,"Fig_5_Unsaturated_fractions_microbes.png")
 plt.savefig(picname, dpi = 300, bbox_inches = 'tight', pad_inches = 0.1)
 
