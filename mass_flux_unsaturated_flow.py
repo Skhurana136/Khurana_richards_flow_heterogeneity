@@ -7,9 +7,9 @@ Created on Wed Feb 10 09:46:19 2021
 import os
 import numpy as np
 import pandas as pd
-import data_reader.data_processing as proc
-import analyses.steady_state as ssa
-import analyses.transient as sta
+import DS.data_reader.data_processing as proc
+import DS.analyses.steady_state as ssa
+import DS.analyses.transient as sta
 
 # Unsaturated flow regime
 Regimes = ["Medium", "Fast", "Slow"]
@@ -44,7 +44,7 @@ for Reg in Regimes:
         filename = Reg+"AR_0_RF-A"+str(j)+"_df.npy"
         data = np.load(os.path.join(directory, filename))
         sat = np.mean(data[4,-1,6:-6,:])
-        massfluxin, massfluxout = ssa.massflux(data, yin, yout, xleft, xright, gvarnames, "Unsaturated")
+        massfluxin, massfluxout = ssa.massflux(data, yin, yout, xleft, xright, vedge, velem, gvarnames, "Unsaturated")
         delmassflux = massfluxin - massfluxout
         reldelmassflux = 100*delmassflux/massfluxin
         normmassflux = massfluxout/massfluxin

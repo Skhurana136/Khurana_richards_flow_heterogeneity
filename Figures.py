@@ -36,7 +36,8 @@ op_dir = r"C:\Users\swkh9804\OneDrive\Documents\Manuscripts\Paper3\Figurecodes"
 #%%
 #Standard color and font options
 my_pal = {2:"indianred", 11:"g", 22:"steelblue", "DO":"indianred", "Nitrate":"g", "Ammonium":"steelblue",
-          'Slow':"indianred", "Medium":"g", "Fast":"steelblue"}
+          'Slow':"indianred", "Medium":"g", "Fast":"steelblue", 0: "steelblue", 1: "orange", 2: "g",
+          3:"indianred"}
 my_style = {'Slow':"o", "Medium":"^", "Fast":"s"}
 
 marklist = ["o", "s", "^","d"]
@@ -174,6 +175,53 @@ plt.tick_params(**labelkw)
 plt.legend(title = "Reactive system", title_fontsize = 14, fontsize = 14, loc = (1.05,0.25))
 picname = os.path.join(op_dir,"Fig_4_Unsaturated_Da_removal_notblue.png")
 plt.savefig(picname, dpi = 300, bbox_inches = 'tight', pad_inches = 0.1)
+
+#%%
+anox_data = unsat_data[(unsat_data['Regime']=="Medium")&(unsat_data["Trial"].isin (anox_dom.Trial.tolist()))]
+ox_data = unsat_data.loc[unsat_data.index.difference(anox_data.index), ]
+
+#%%
+for r in Regimes:
+    #subset = anox_data[anox_data['PeDamark'] == frac]
+    subset = anox_data[anox_data['Regime'] == r]
+    if subset.shape[0]==0:
+        pass
+    else:
+        y = subset["pc_reldelconc_spatial"]
+        X = subset[["fraction"]]
+        plt.scatter(X*100, y, c = my_pal[r], marker = my_style[r],alpha = 0.5, label = r)#labels[frac])
+plt.xlabel ("Residence time of solutes (%)", **titlekw)
+plt.ylabel("Removal of reactive species (%)", ha='center', va='center', rotation='vertical', labelpad = 10, **titlekw)
+locs, labels1 = plt.yticks()
+#plt.yscale("log")
+plt.yticks((0,20,40,60,80,100,120, 140),(0,20,40,60,80,100,120, 140))
+plt.xticks((0,20,40,60,80,100),(0,20,40,60,80,100))
+plt.tick_params(**labelkw)
+plt.legend(title = "Reactive system", title_fontsize = 14, fontsize = 14, loc = (1.05,0.25))
+picname = os.path.join(op_dir,"Fig_4_1_Unsaturated_Da_removal_anoxic.png")
+plt.savefig(picname, dpi = 300, bbox_inches = 'tight', pad_inches = 0.1)
+#%%
+for r in Regimes:#frac in [1,2,3]:
+    #subset = ox_data[ox_data['PeDamark'] == frac]
+    subset = ox_data[ox_data['Regime'] == r]
+    if subset.shape[0]==0:
+        pass
+    else:
+        y = subset["pc_reldelconc_spatial"]
+        X = subset[["fraction"]]
+        plt.scatter(X*100, y, c = my_pal[r], marker = my_style[r],alpha = 0.5, label = r)#labels[frac])
+plt.xlabel ("Residence time of solutes (%)", **titlekw)
+plt.ylabel("Removal of reactive species (%)", ha='center', va='center', rotation='vertical', labelpad = 10, **titlekw)
+locs, labels1 = plt.yticks()
+plt.ylim((0,200))
+plt.yticks((0,20,40,60,80,100,120, 140),(0,20,40,60,80,100,120, 140))
+plt.xticks((0,20,40,60,80,100),(0,20,40,60,80,100))
+plt.tick_params(**labelkw)
+plt.legend(title = "Reactive system", title_fontsize = 14, fontsize = 14, loc = (1.05,0.25))
+picname = os.path.join(op_dir,"Fig_4_2_Unsaturated_Da_removal_oxic.png")
+plt.savefig(picname, dpi = 300, bbox_inches = 'tight', pad_inches = 0.1)
+#%%
+
 #%%
 fig, axes = plt.subplots(1,2, figsize = (7,3), sharex = True, sharey = True)
 sns.scatterplot(data = unsat_sub, x = "eff_sat", y = "State_Ratio", hue = "Regime",  hue_order = ["Slow", "Medium", "Fast"],

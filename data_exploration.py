@@ -13,11 +13,18 @@ import pandas as pd
 #Import visualization libraries
 import matplotlib.pyplot as plt
 import seaborn as sns
+
+#User libraries
+from DS.data_reader import data_processing as proc
 print ("All libraries loaded")
 
+#%%
+# Assign directories based on where you are
+# work computer
+data_dir = r"C:\Users\swkh9804\OneDrive\Documents\Manuscripts\Paper3\Figurecodes"
+raw_dir = r"D:\Data\Richards_flow\RF_big_sat_2"
 # %%
-#Assign file names and assign directories
-data_dir = "D:\Publications\Paper3\Figurecodes"
+#Assign file names
 biomass_file = "biomass_comparison_with_sat_26092021.csv"
 chem_file = "conc_comparison_with_sat_26092021.csv"
 print ("Path directories and files assigned")
@@ -52,8 +59,7 @@ print(chem_vars)
 regimes = chemdata.Regime.unique().tolist()
 color_scheme = {"Slow":"darkorange",
 "Medium":"limegreen", "Fast":"slateblue"}
-marker_scheme = {"Slow":"o",
-"Medium":"s", "Fast":"^"}
+marker_scheme = {"Slow":"o", "Medium":"s", "Fast":"^"}
 
 #%%
 # Make a grid plot with each biomass fraction against each chemical
@@ -83,3 +89,56 @@ for state in ["Immobile", "Mobile"]:
             subax.set_xscale("log")
     picname = os.path.join(data_dir, "scatter"+state+".pdf")
     fig.savefig(picname, dpi = 300, pad = 0.1)
+
+#%%
+# Identify oxic domains
+import DS.analyses.transient as sta
+Regimes = ["Slow", "Medium", "Fast"]
+scdict = proc.masterscenarios("Unsaturated")
+species = proc.speciesdict("Unsaturated")
+yout = -6
+yin = 6
+vertnodes = 113
+xleft = 0
+xright = -1
+vedge = 0.0025
+velem = 0.005
+vbc = 0.3
+por = 0.2
+
+dom = []
+for r in Regimes:
+    for j in list(scdict.keys()):
+        file = os.path.join(raw_dir, r+"AR_0_RF-A"+str(j)+"_df.npy")
+        data = np.load(file)
+        sat = np.mean(data[4,-1,6:-6,:])
+        conctime, TotalFlow, Headinlettime = sta.conc_time(data, yin, yout, xleft, xright, vertnodes, ["DO"], "Unsaturated")
+        do_data = conctime[-1,yin:yout,0]
+        dom.append([r, j,scdict[j]['Het'], scdict[j]['Anis'], np.mean(do_data), np.median(do_data), do_data[-1], sat])
+
+#%%
+dom_df = pd.DataFrame.from_records(dom, columns = ["Regime","Trial","Variance","Anisotropy","Mean_DO","Median_DO","Outlet_DO", "Saturation"])
+dom_df.to_csv(os.path.join(data_dir, "oxic_state.csv"))
+
+#%%
+anox_dom = dom_df[dom_df.Median_DO < 50]
+print(anox_dom.shape)
+print(anox_dom.Regime.unique())
+ox_dom = dom_df.loc[dom_df.index.difference(anox_dom.index), ]
+print(ox_dom.shape)
+print(ox_dom.Regime.unique())
+
+#%%
+plt.figure()
+sns.scatterplot(x = "Saturation", y = "Mean_DO", hue = "Regime", data = anox_dom, marker = '+', hue_order = ["Slow","Medium","Fast"])
+sns.scatterplot(x = "Saturation", y = "Mean_DO", hue = "Regime", data = ox_dom, marker = '^', hue_order = ["Slow","Medium","Fast"])
+#%%
+anox_scenarios = anox_dom.index.tolist()
+#%%
+sns.scatterplot(x="Variance", y="Mean_DO", data = anox_dom, hue = "Regime", marker = "o")
+sns.scatterplot(x="Variance", y="Median_DO", data = anox_dom, hue = "Regime", marker = "^")
+#sns.scatterplot(x="Variance", y="Mean_DO", data = anox_dom)
+#%%
+sns.scatterplot(x="Variance", y="Mean_DO", data = ox_dom, hue = "Regime", marker = "o")
+#sns.scatterplot(x="Variance", y="Median_DO", data = ox_dom, hue = "Regime", marker = "^")
+plt.legend(loc = (0, -0.5), ncol = 3)
