@@ -123,6 +123,32 @@ plt.savefig(picname, dpi = 300, bbox_inches = 'tight', pad_inches = 0.01)
 
 #%%
 #%%
+diff_data_path = os.path.join(uss_dir, "aero_rates_het.csv")
+mdiff_data = pd.read_csv (diff_data_path)
+print (mdiff_data.columns)
+print(mdiff_data.rate.unique())
+#%%
+var_to_plot = "Respiration_diffusion_ratio"
+diff_data = mdiff_data[mdiff_data['rate']==var_to_plot]
+diff_data['fraction%'] = diff_data.fraction*100
+fig, a = plt.subplots(1,2, figsize = (8,4), sharey = True)
+sns.scatterplot(x = 'Mean_saturation', y = 'rate_val', hue = 'Regime',
+hue_order= ['Slow', 'Medium','Fast'], style = 'Regime',palette= my_pal, data = diff_data, ax = a[0])
+a[0].set_xlabel ("Mean saturation\nin domain", **titlekw)
+a[0].set_ylabel(var_to_plot, ha='center', va='center', rotation='vertical', labelpad = 10, **titlekw)
+a[0].legend().remove()
+sns.scatterplot(x = 'fraction%', y = 'rate_val', hue = 'Regime',
+hue_order= ['Slow', 'Medium','Fast'], style = 'Regime',palette= my_pal, data = diff_data, ax = a[1])
+#a[0].text(s="A", x = 0.45, y = 8, **titlekw)
+a[1].set_xlabel ("Residence time\nof solutes (%)", **titlekw)
+a[1].set_ylabel ("")
+a[0].tick_params(**labelkw)
+a[1].tick_params(**labelkw)
+#a[1].text(s="B", x = 30, y = 8, **titlekw)
+plt.legend(title = "Flow regime", title_fontsize = 14, fontsize = 14, loc = (-0.9,-0.5), ncol = 3)
+picname = os.path.join(op_dir,var_to_plot+"_Fig_XX_diffusion.png")
+plt.savefig(picname, dpi = 300, bbox_inches = 'tight', pad_inches = 0.01)
+#%%
 aero_data_path = os.path.join(uss_dir, "DO_consumption_unsat_het.csv")
 aero_data = pd.read_csv (aero_data_path)
 print (aero_data.columns)
@@ -144,6 +170,50 @@ a[1].text(s="B", x = 30, y = 140, **titlekw)
 plt.legend(title = "Flow regime", title_fontsize = 14, fontsize = 14, loc = (-0.9,-0.5), ncol = 3)
 picname = os.path.join(op_dir,"Fig_3_aerobic_activity_impact.png")
 plt.savefig(picname, dpi = 300, bbox_inches = 'tight', pad_inches = 0.01)
+#%%
+unsat_data = unsat_da[unsat_da['Chem'].isin (gvarnames)]
+
+unsat_data.loc[unsat_data["Regime"] == 'Fast', "diff"] = int(0)
+unsat_data.loc[unsat_data["Regime"] == 'Slow', "diff"] = int(1)
+unsat_data.loc[unsat_data["Regime"] == 'Medium', "diff"] = int(1)
+
+diff_labels = {1 : "Diffusion",
+         0 : "No diffusion"}
+
+unsat_data["logDa"] = np.log10(unsat_data.Da)
+
+unsat_data.loc[unsat_data["logDa"] < -1, "PeDamark"] = 0
+unsat_data.loc[(unsat_data["logDa"] > -1) & (unsat_data["logDa"] < 0), "PeDamark"] = 1
+unsat_data.loc[(unsat_data["logDa"] > 0) & (unsat_data["logDa"] <0.5), "PeDamark"] = 2
+unsat_data.loc[(unsat_data["logDa"] > 0.5), "PeDamark"] = 3
+
+labels = {3 : "log$_{10}$Da > 0.5",
+          2 : "0 < log$_{10}$Da < 0.5",
+          1 : "-1 < log$_{10}$Da < 0",
+         0 : "log$_{10}$Da < -1"}
+
+unsat_data["pc_reldelconc_spatial"] = unsat_data.reldelconc_spatial_fraction * 100
+
+for frac in [1,2,3]:
+    subset_1 = unsat_data[unsat_data['PeDamark'] == frac]
+    for d_frac in [0,1]:
+        subset = subset_1[subset_1['diff']==d_frac]
+        if subset.shape[0]<1:
+            pass
+        else:
+            y = subset["pc_reldelconc_spatial"]
+            X = subset[["fraction"]]
+            plt.scatter(X*100, y, c = my_pal[d_frac], marker = marklist[frac],alpha = 0.5, label = labels[frac])
+plt.xlabel ("Residence time of solutes (%)", **titlekw)
+plt.ylabel("Removal of reactive species (%)", ha='center', va='center', rotation='vertical', labelpad = 10, **titlekw)
+locs, labels1 = plt.yticks()
+#plt.yscale("log")
+plt.yticks((0,20,40,60,80,100,120, 140),(0,20,40,60,80,100,120, 140))
+plt.xticks((0,20,40,60,80,100),(0,20,40,60,80,100))
+plt.tick_params(**labelkw)
+plt.legend(title = "Reactive system", title_fontsize = 14, fontsize = 14, loc = (1.05,0.25))
+picname = os.path.join(op_dir,"_Fig_4_Unsaturated_diff_removal.png")
+plt.savefig(picname, dpi = 300, bbox_inches = 'tight', pad_inches = 0.1)
 #%%
 unsat_data = unsat_da[unsat_da['Chem'].isin (gvarnames)]
 unsat_data["logDa"] = np.log10(unsat_data.Da)
@@ -177,13 +247,42 @@ picname = os.path.join(op_dir,"Fig_4_Unsaturated_Da_removal_notblue.png")
 plt.savefig(picname, dpi = 300, bbox_inches = 'tight', pad_inches = 0.1)
 
 #%%
-anox_data = unsat_data[(unsat_data['Regime']=="Medium")&(unsat_data["Trial"].isin (anox_dom.Trial.tolist()))]
-ox_data = unsat_data.loc[unsat_data.index.difference(anox_data.index), ]
+diff_data_2 = mdiff_data[mdiff_data['rate']=='Respiration_diffusion_ratio']
+diff_unsat_data = pd.merge(diff_data_2[['Regime','Trial','rate', 'rate_val']], unsat_data, on = ['Regime','Trial'])
+diff_unsat_data.loc[diff_unsat_data['rate_val']>3, "diff"] = int(0)
+diff_unsat_data.loc[diff_unsat_data['rate_val']<3, "diff"] = int(1)
+diff_labels = {1 : "Diffusion",
+         0 : "No diffusion"}
+
+n0_diff_data = diff_unsat_data[diff_unsat_data['rate_val']>5]
+n1_diff_data = diff_unsat_data[diff_unsat_data['rate_val']<5]
+
+#%%
+for frac in [1,2,3]:
+    subset_1 = diff_unsat_data[diff_unsat_data['PeDamark'] == frac]
+    for d_frac in [0,1]:
+        subset = subset_1[subset_1['diff']==d_frac]
+        if subset.shape[0]<1:
+            pass
+        else:
+            y = subset["pc_reldelconc_spatial"]
+            X = subset[["fraction"]]
+            plt.scatter(X*100, y, c = my_pal[d_frac], marker = marklist[frac],alpha = 0.5, label = labels[frac])
+plt.xlabel ("Residence time of solutes (%)", **titlekw)
+plt.ylabel("Removal of reactive species (%)", ha='center', va='center', rotation='vertical', labelpad = 10, **titlekw)
+locs, labels1 = plt.yticks()
+#plt.yscale("log")
+plt.yticks((0,20,40,60,80,100,120, 140),(0,20,40,60,80,100,120, 140))
+plt.xticks((0,20,40,60,80,100),(0,20,40,60,80,100))
+plt.tick_params(**labelkw)
+plt.legend(title = "Reactive system", title_fontsize = 14, fontsize = 14, loc = (1.05,0.25))
+picname = os.path.join(op_dir,"_Fig_4_Unsaturated_diff_removal_n0_1.png")
+plt.savefig(picname, dpi = 300, bbox_inches = 'tight', pad_inches = 0.1)
 
 #%%
 for r in Regimes:
     #subset = anox_data[anox_data['PeDamark'] == frac]
-    subset = anox_data[anox_data['Regime'] == r]
+    subset = n0_diff_data[n0_diff_data['Regime'] == r]
     if subset.shape[0]==0:
         pass
     else:
@@ -193,12 +292,13 @@ for r in Regimes:
 plt.xlabel ("Residence time of solutes (%)", **titlekw)
 plt.ylabel("Removal of reactive species (%)", ha='center', va='center', rotation='vertical', labelpad = 10, **titlekw)
 locs, labels1 = plt.yticks()
-#plt.yscale("log")
-plt.yticks((0,20,40,60,80,100,120, 140),(0,20,40,60,80,100,120, 140))
+plt.yscale("log")
+plt.ylim(top=200)
+#plt.yticks((0,20,40,60,80,100,120, 140),(0,20,40,60,80,100,120, 140))
 plt.xticks((0,20,40,60,80,100),(0,20,40,60,80,100))
 plt.tick_params(**labelkw)
 plt.legend(title = "Reactive system", title_fontsize = 14, fontsize = 14, loc = (1.05,0.25))
-picname = os.path.join(op_dir,"Fig_4_1_Unsaturated_Da_removal_anoxic.png")
+picname = os.path.join(op_dir,"Fig_4_1_Unsaturated_Da_removal_n0_diff.png")
 plt.savefig(picname, dpi = 300, bbox_inches = 'tight', pad_inches = 0.1)
 #%%
 for r in Regimes:#frac in [1,2,3]:
