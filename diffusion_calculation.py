@@ -3,12 +3,6 @@ import os
 import pandas as pd
 import numpy as np
 
-#Visualization libraries
-import matplotlib.pyplot as plt
-import seaborn as sns
-import matplotlib.patches as mpatches
-import matplotlib.lines as mlines
-
 #User libraries
 #import DS.plots.saturated_steady_state as sssp
 #import DS.analyses.transient as translys
@@ -41,24 +35,6 @@ print(mfdata.Regime.unique())
 print(mfdata.Chem.unique())
 print(mfdata_comparison.Regime.unique())
 print(mfdata_comparison.Chem.unique())
-
-#Defining base parameters for figures
-grey_dot = mlines.Line2D([], [], linestyle = '', marker = "o", markerfacecolor = "grey", markeredgecolor = "grey", markersize=10, label='DO', alpha = 0.5)
-grey_triangle = mlines.Line2D([], [], linestyle = '', marker = "^", markerfacecolor = "grey", markeredgecolor = "grey",markersize=10, label='Nitrogen', alpha = 0.5)
-grey_square = mlines.Line2D([], [], linestyle = '', marker = "s", markerfacecolor = "grey", markeredgecolor = "grey",markersize=10, label='DOC', alpha = 0.5)
-empty_square = mlines.Line2D([], [], linestyle = '', marker = "d", markerfacecolor = "grey", markeredgecolor = "grey",markersize=10, label='TOC', alpha = 0.5)
-empty_triangle = mlines.Line2D([], [], linestyle = '', marker = "<", markerfacecolor = "grey", markeredgecolor = "grey",markersize=10, label='Nitrate', alpha = 0.5)
-empty_diamond = mlines.Line2D([], [], linestyle = '', marker = ">", markerfacecolor = "grey", markeredgecolor = "grey",markersize=10, label='Ammonium', alpha = 0.5)
-my_pal = {3:"indianred", 2: "g", 0:"steelblue", 1 :"orange",
-          "Slow":"indianred", "Medium": "g", "Fast":"steelblue"}
-blue_patch = mpatches.Patch(color="steelblue", label= "Fast flow", alpha = 0.5)
-green_patch = mpatches.Patch(color="g", label="Medium flow", alpha = 0.5)
-red_patch = mpatches.Patch(color="indianred", label="Slow flow", alpha = 0.5)
-#patchlist = [blue_patch, green_patch, red_patch, grey_square, empty_square, grey_dot, grey_triangle, empty_triangle, empty_diamond]
-patchlist = [blue_patch, green_patch, red_patch, grey_square, grey_dot, empty_triangle, empty_diamond]
-regimes = ["Slow", "Medium", "Fast"]
-mymarklist = {'DOC': 's', 'TOC' : 'd', 'DO': 'o', 'Nitrogen': '^', 'Ammonium' : '>', 'Nitrate':'<'}
-
 
 def Convertetoarray(D, datatype, vertnodes, horiznodes):
     if (datatype == "tec"):
