@@ -1,4 +1,5 @@
-## Import libraries
+#%%
+# ## Import libraries
 import os
 import pandas as pd
 import numpy as np
@@ -11,8 +12,12 @@ print ("All libraries loaded")
 
 # Assign directories based on where you are
 # work computer
-data_dir = r"C:\Users\swkh9804\OneDrive\Documents\Manuscripts\Paper3\Figurecodes"
-raw_dir = r"D:\Data\Richards_flow\Richards_flow_big_sat"#D:\Data\Richards_flow\RF_big_sat_2"
+#data_dir = r"C:\Users\swkh9804\OneDrive\Documents\Manuscripts\Paper3\Figurecodes"
+#raw_dir = r"D:\Data\Richards_flow\Richards_flow_big_sat"#D:\Data\Richards_flow\RF_big_sat_2"
+
+# home computer
+data_dir = r"C:\Users\swami\OneDrive\Documents\Manuscripts\Paper3\Figurecodes"
+raw_dir = r"E:\Data\Richards_flow\Richards_flow_big_sat"#D:\Data\Richards_flow\RF_big_sat_2"
 # %%
 #Assign file names
 biomass_file = "biomass_comparison_with_sat_26092021.csv"
@@ -81,26 +86,55 @@ trialist = proc.masterscenarios("Unsaturated")
 mTrial = list(trialist.keys())
 droplist = ["72","98","111","137","165","185"]
 Trial = list(t for t in mTrial if t not in droplist)
-
+#%%
 row = []
 for r in Regimes:
     reg_dir = os.path.join(raw_dir, r+"AR_0")
     for t in Trial:
+        print(r, t)
         path = os.path.join(reg_dir, "RF-A"+str(t),"ratesAtFinish.dat")
-        print(r,t)
         rates = np.loadtxt(path, usecols = ratesind, delimiter = ' ')
         rates_array = Convertetoarray(rates, "rates", 113, 61)
         resp_sum = 0
-        for r_i in list(range(len(aerorates))):
-            corners = (rates_array[r_i,6,0]+rates_array[r_i,6,-1]+rates_array[r_i,-7,0]+rates_array[r_i,-7,-1])*0.0025*0.0025
-            boundary = np.sum(np.sum(rates_array[r_i,6,1:-1]+rates_array[r_i,-7,1:-1])*0.0025*0.005+(rates_array[r_i,6:-6,0]-rates_array[r_i,6:-6,-1])*0.0025*0.005)
-            elem = np.sum(rates_array[r_i,6:-6,1:-1])*0.005*0.005
-            netdorem = corners+boundary+elem
-            resp_sum += netdorem
-            row.append([r,t,"DO",aerorates[r_i],netdorem])
-        resp_diff_ratio = (resp_sum-netdorem)/netdorem
-        row.append([r,t,"DO","Respiration_diffusion_ratio",resp_diff_ratio])
-
+        resp_corners = 0
+        resp_boundary_top = 0
+        resp_boundary_bot = 0
+        resp_elem = 0
+        diff_i = aerorates.index('DOdiffusion')
+        diff_corners = [rates_array[diff_i,6,0],rates_array[diff_i,6,-1],rates_array[diff_i,-7,0],rates_array[diff_i,-7,-1]]
+        diff_boundary_top = [rates_array[diff_i,6,1:-1],rates_array[diff_i,-7,1:-1]]
+        diff_boundary_bot = [rates_array[diff_i,7:-7,0],rates_array[diff_i,7:-7,-1]]
+        diff_elem = rates_array[diff_i,7:-7,1:-1]
+        diff_total = np.sum(diff_corners)*0.0025*0.0025+(np.sum(diff_boundary_top)+np.sum(diff_boundary_bot))*0.0025*0.005+np.sum(diff_elem)*0.005*0.005
+        for r_i in list(range(len(aerorates)-1)):
+            corners = np.asarray([rates_array[r_i,6,0],rates_array[r_i,6,-1],rates_array[r_i,-7,0],rates_array[r_i,-7,-1]])
+            boundary_top = np.asarray([rates_array[r_i,6,1:-1],rates_array[r_i,-7,1:-1]])
+            boundary_bot = np.asarray([rates_array[r_i,7:-7,0],rates_array[r_i,7:-7,-1]])
+            elem = rates_array[r_i,7:-7,1:-1]
+            totaldorem = np.sum(corners)*0.0025*0.0025+(np.sum(boundary_top)+np.sum(boundary_bot))*0.0025*0.005+np.sum(elem)*0.005*0.005
+            resp_corners = resp_corners + corners
+            resp_boundary_top = resp_boundary_top + boundary_top
+            resp_boundary_bot = resp_boundary_bot +  boundary_bot
+            resp_elem += elem
+            resp_sum += totaldorem
+            row.append([r,t,"DO",aerorates[r_i],totaldorem])
+        resp_diff_ratio_corners = resp_corners/diff_corners
+        resp_diff_ratio_boundary_top = resp_boundary_top/diff_boundary_top
+        resp_diff_ratio_boundary_bot = resp_boundary_bot/diff_boundary_bot
+        resp_diff_ratio_elem = resp_elem/diff_elem
+        resp_diff_g_1_number = 0
+        resp_diff_e_1_number = 0
+        resp_diff_l_1_number = 0
+        for z in [resp_diff_ratio_corners,resp_diff_ratio_boundary_top,resp_diff_ratio_boundary_bot,resp_diff_ratio_elem]:
+            resp_diff_g_1_number += np.size(np.argwhere(z>1))
+            resp_diff_e_1_number += np.size(np.argwhere(z==1))
+            resp_diff_l_1_number += np.size(np.argwhere(z<1))
+        resp_diff_ratio_total = (resp_sum)/diff_total
+        row.append([r,t,"DO","Respiration_diffusion_ratio_total",resp_diff_ratio_total])
+        row.append([r,t,"DO","Respiration_diffusion_>1_num",resp_diff_g_1_number])
+        row.append([r,t,"DO","Respiration_diffusion_=1_num",resp_diff_e_1_number])
+        row.append([r,t,"DO","Respiration_diffusion_<1_num",resp_diff_l_1_number])
+        print(resp_diff_g_1_number, resp_diff_e_1_number, resp_diff_l_1_number)
 netdorem = pd.DataFrame.from_records(row, columns = ["Regime", "Trial", "Chem","rate","rate_val"])
 
 sat_dorem = pd.merge(mfdata_comparison, netdorem, on = ["Regime", "Trial", "Chem"])

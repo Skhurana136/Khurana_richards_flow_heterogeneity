@@ -128,7 +128,7 @@ mdiff_data = pd.read_csv (diff_data_path)
 print (mdiff_data.columns)
 print(mdiff_data.rate.unique())
 #%%
-var_to_plot = "Respiration_diffusion_ratio"
+var_to_plot = "Respiration_diffusion_ratio_total"
 diff_data = mdiff_data[mdiff_data['rate']==var_to_plot]
 diff_data['fraction%'] = diff_data.fraction*100
 fig, a = plt.subplots(1,2, figsize = (8,4), sharey = True)
@@ -144,6 +144,7 @@ a[1].set_xlabel ("Residence time\nof solutes (%)", **titlekw)
 a[1].set_ylabel ("")
 a[0].tick_params(**labelkw)
 a[1].tick_params(**labelkw)
+plt.yscale("log")
 #a[1].text(s="B", x = 30, y = 8, **titlekw)
 plt.legend(title = "Flow regime", title_fontsize = 14, fontsize = 14, loc = (-0.9,-0.5), ncol = 3)
 picname = os.path.join(op_dir,var_to_plot+"_Fig_XX_diffusion.png")
@@ -247,15 +248,15 @@ picname = os.path.join(op_dir,"Fig_4_Unsaturated_Da_removal_notblue.png")
 plt.savefig(picname, dpi = 300, bbox_inches = 'tight', pad_inches = 0.1)
 
 #%%
-diff_data_2 = mdiff_data[mdiff_data['rate']=='Respiration_diffusion_ratio']
+diff_data_2 = mdiff_data[mdiff_data['rate']=='Respiration_diffusion_>1_num']
 diff_unsat_data = pd.merge(diff_data_2[['Regime','Trial','rate', 'rate_val']], unsat_data, on = ['Regime','Trial'])
-diff_unsat_data.loc[diff_unsat_data['rate_val']>3, "diff"] = int(0)
-diff_unsat_data.loc[diff_unsat_data['rate_val']<3, "diff"] = int(1)
+diff_unsat_data.loc[diff_unsat_data['rate_val']>8000, "diff"] = int(0)
+diff_unsat_data.loc[diff_unsat_data['rate_val']<8000, "diff"] = int(1)
 diff_labels = {1 : "Diffusion",
          0 : "No diffusion"}
 
-n0_diff_data = diff_unsat_data[diff_unsat_data['rate_val']>5]
-n1_diff_data = diff_unsat_data[diff_unsat_data['rate_val']<5]
+n0_diff_data = diff_unsat_data[diff_unsat_data['rate_val']>2.7]
+n1_diff_data = diff_unsat_data[diff_unsat_data['rate_val']<2.7]
 
 #%%
 for frac in [1,2,3]:
