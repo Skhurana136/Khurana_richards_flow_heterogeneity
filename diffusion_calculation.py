@@ -12,12 +12,12 @@ print ("All libraries loaded")
 
 # Assign directories based on where you are
 # work computer
-#data_dir = r"C:\Users\swkh9804\OneDrive\Documents\Manuscripts\Paper3\Figurecodes"
-#raw_dir = r"D:\Data\Richards_flow\Richards_flow_big_sat"#D:\Data\Richards_flow\RF_big_sat_2"
+data_dir = r"C:\Users\swkh9804\OneDrive\Documents\Manuscripts\Paper3\Figurecodes"
+raw_dir = r"D:\Data\Richards_flow\Richards_flow_big_sat"#D:\Data\Richards_flow\RF_big_sat_2"
 
 # home computer
-data_dir = r"C:\Users\swami\OneDrive\Documents\Manuscripts\Paper3\Figurecodes"
-raw_dir = r"E:\Data\Richards_flow\Richards_flow_big_sat"#D:\Data\Richards_flow\RF_big_sat_2"
+#data_dir = r"C:\Users\swami\OneDrive\Documents\Manuscripts\Paper3\Figurecodes"
+#raw_dir = r"E:\Data\Richards_flow\Richards_flow_big_sat"#D:\Data\Richards_flow\RF_big_sat_2"
 # %%
 #Assign file names
 biomass_file = "biomass_comparison_with_sat_26092021.csv"
@@ -122,19 +122,15 @@ for r in Regimes:
         resp_diff_ratio_boundary_top = resp_boundary_top/diff_boundary_top
         resp_diff_ratio_boundary_bot = resp_boundary_bot/diff_boundary_bot
         resp_diff_ratio_elem = resp_elem/diff_elem
-        resp_diff_g_1_number = 0
-        resp_diff_e_1_number = 0
-        resp_diff_l_1_number = 0
-        for z in [resp_diff_ratio_corners,resp_diff_ratio_boundary_top,resp_diff_ratio_boundary_bot,resp_diff_ratio_elem]:
-            resp_diff_g_1_number += np.size(np.argwhere(z>1))
-            resp_diff_e_1_number += np.size(np.argwhere(z==1))
-            resp_diff_l_1_number += np.size(np.argwhere(z<1))
+        resp_diff_ratio_arrays = [resp_diff_ratio_corners,resp_diff_ratio_boundary_top,resp_diff_ratio_boundary_bot,resp_diff_ratio_elem]
+        resp_diff_g_1_number = sum(list(np.size(np.argwhere(z.flatten()>1)) for z in resp_diff_ratio_arrays))
+        resp_diff_e_1_number = sum(list(np.size(np.argwhere(z.flatten()==1)) for z in resp_diff_ratio_arrays))
+        resp_diff_l_1_number = sum(list(np.size(np.argwhere(z.flatten()<1)) for z in resp_diff_ratio_arrays))
         resp_diff_ratio_total = (resp_sum)/diff_total
         row.append([r,t,"DO","Respiration_diffusion_ratio_total",resp_diff_ratio_total])
         row.append([r,t,"DO","Respiration_diffusion_>1_num",resp_diff_g_1_number])
         row.append([r,t,"DO","Respiration_diffusion_=1_num",resp_diff_e_1_number])
         row.append([r,t,"DO","Respiration_diffusion_<1_num",resp_diff_l_1_number])
-        print(resp_diff_g_1_number, resp_diff_e_1_number, resp_diff_l_1_number)
 netdorem = pd.DataFrame.from_records(row, columns = ["Regime", "Trial", "Chem","rate","rate_val"])
 
 sat_dorem = pd.merge(mfdata_comparison, netdorem, on = ["Regime", "Trial", "Chem"])
@@ -149,3 +145,4 @@ sat_dorem.head()
 #sat_dorem['diffusion_fraction%'] = sat_dorem['diffusion_fraction']*100
 
 sat_dorem.to_csv(os.path.join(data_dir,"aero_rates_het.csv"), index =False)
+# %%
