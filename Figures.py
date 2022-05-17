@@ -143,7 +143,7 @@ a[1,1].set_xlabel ("Residence time\nof solutes (%)", **titlekw)
 a[1,0].set_xlabel ("Mean saturation\nin domain", **titlekw)
 a[1,0].set_ylabel(r"$\frac{Respiration}{Diffusion}$", ha='center', va='center', rotation='vertical', labelpad = 10, **titlekw)
 a[0,0].set_xlabel ("")
-a[0,0].set_ylabel("Impact on microbial activity (%)", ha='center', va='center', rotation='vertical', labelpad = 10, **titlekw)
+a[0,0].set_ylabel("DO consumption rate (%)", ha='center', va='center', rotation='vertical', labelpad = 10, **titlekw)
 
 sns.scatterplot(x = 'Mean_saturation', y = 'DOrem_fraction%', hue = 'Regime',
 hue_order= ['Slow', 'Medium','Fast'], style = 'Regime',palette= my_pal, data = aero_data, ax = a[0,0])
