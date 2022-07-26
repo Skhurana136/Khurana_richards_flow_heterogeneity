@@ -231,8 +231,6 @@ plt.legend(title = "Reactive system", title_fontsize = 14, fontsize = 14, loc = 
 picname = os.path.join(op_dir,"Fig_4_Unsaturated_Da_removal_notblue.png")
 plt.savefig(picname, dpi = 300, bbox_inches = 'tight', pad_inches = 0.1)
 
-
-
 #%%
 for r in Regimes:
     #subset = anox_data[anox_data['PeDamark'] == frac]
@@ -371,6 +369,7 @@ picname = os.path.join(op_dir,"Fig_2_tracer_breakthrough.png")
 #%%
 cv_file = os.path.join(uss_dir,"coeff_var.csv")
 cvdata_unsat = pd.read_csv(cv_file)
+#%%
 #Plotting
 finaldata_unsat = cvdata_unsat
 fig, axes = plt.subplots(4,1, figsize = (4,6), sharex = True, sharey = 'row')
@@ -414,6 +413,18 @@ l = plt.legend(handles, labels, bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0
 picname = os.path.join(op_dir,"Fig_S7_cv_imm_active.png")
 plt.savefig(picname, dpi = 300, bbox_inches = 'tight', pad_inches = 0.01)
 
+#%%
+finaldata_unsat = cvdata_unsat
+subdata_unsat = finaldata_unsat[(finaldata_unsat.Chem=="Saturation")&(finaldata_unsat.Trial!='H')]
+plt.figure()
+sns.boxplot(x = 'Variance', y = 'cv', hue = 'Regime', hue_order = ["Slow", "Medium", "Fast"], palette = my_pal, 
+            data = subdata_unsat)
+plt.ylabel("Coefficient of variation", fontsize = 14)
+plt.tick_params(labelsize=14)
+plt.xlabel("Variance", fontsize = 14)
+plt.tick_params(labelsize=14)
+picname = os.path.join(op_dir,"Fig_S12_cv_saturation.png")
+plt.savefig(picname, dpi = 300, bbox_inches = 'tight', pad_inches = 0.01)
 #---EXTRA---###
 #%%
 fig, axes = plt.subplots(1,2, figsize = (7,3), sharex = True, sharey = True)
