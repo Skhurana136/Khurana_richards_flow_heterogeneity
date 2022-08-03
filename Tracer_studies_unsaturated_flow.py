@@ -1,19 +1,19 @@
 # -*- coding: utf-8 -*-
 """
-Spyder Editor
 
-This is a temporary script file.
 """
 import os
 import numpy as np
 import pandas as pd
-import data_reader.data_processing as proc
-import analyses.transient as ta
-import plots.general_plots as gp
+from DS.data_reader import data_processing as proc
+from DS.analyses import transient as ta
+from DS.plots import general_plots as gp
+#import analyses.transient as ta
+#import plots.general_plots as gp
 
 # Unsaturated flow regime
-raw_dir = "E:/Richards_flow/Richards_flow_tr"
-output_dir = "Y:/Home/khurana/4. Publications/Paper3/Figurecodes"
+raw_dir = r"D:\Data\Richards_flow\Richards_flow_tr"
+output_dir = r"C:\Users\swkh9804\OneDrive\Documents\Manuscripts\Paper3\Figurecodes"
 fpre = "RF-A"
 fsuf = r"/"
 gw = 0
@@ -60,10 +60,10 @@ for Reg, s in zip(Regimes, steps):
         breakthrough2.append([Reg, t, scdict[t]['Het'], scdict[t]['Anis'], "Tracer", s*Time[0][0], (s*Time[0][0])/initial])
 
 data = pd.DataFrame(breakthrough2, columns = ["Regime", "Trial", "Variance", "Anisotropy", "Chem", "Time", "fraction"])
-f = os.path.join(output_dir, "tracer_11062021.csv")
+f = os.path.join(output_dir, "tracer_03082022.csv")#11062021.csv")
 data.to_csv(f, index = 'False')
         
 # plotting boxplots to see variance of breakthrough from homogeneous scenario
 tracerplot = gp.plot_tracer(f)
-plot_path = os.path.join(output_dir, "tracer_breakthrough_impact.png")
+plot_path = os.path.join(output_dir, "tracer_breakthrough_impact_03082022.png")#"tracer_breakthrough_impact.png")
 tracerplot.savefig(plot_path, dpi = 300, pad_inches = 0.1, bbox_inches = 'tight')
