@@ -60,10 +60,10 @@ for Reg, s in zip(Regimes, steps):
         breakthrough2.append([Reg, t, scdict[t]['Het'], scdict[t]['Anis'], "Tracer", s*Time[0][0], (s*Time[0][0])/initial])
 
 data = pd.DataFrame(breakthrough2, columns = ["Regime", "Trial", "Variance", "Anisotropy", "Chem", "Time", "fraction"])
-f = os.path.join(output_dir, "tracer_wo_effsat_03082022.csv")#11062021.csv")
+f = os.path.join(output_dir, "tracer_09082022.csv")
 data.to_csv(f, index = 'False')
         
 ## plotting boxplots to see variance of breakthrough from homogeneous scenario
 tracerplot = gp.plot_tracer(f)
-plot_path = os.path.join(output_dir, "tracer_breakthrough_impact_wo_effsat_03082022.png")#"tracer_breakthrough_impact.png")
+plot_path = os.path.join(output_dir, "tracer_breakthrough_impact_09082022.png")#"tracer_breakthrough_impact.png")
 tracerplot.savefig(plot_path, dpi = 300, pad_inches = 0.1, bbox_inches = 'tight')
