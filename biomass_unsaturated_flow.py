@@ -7,8 +7,8 @@ Created on Wed Feb 10 09:46:19 2021
 import os
 import numpy as np
 import pandas as pd
-import data_reader.data_processing as proc
-import analyses.steady_state as ssa
+import DS.data_reader.data_processing as proc
+import DS.analyses.steady_state as ssa
 
 # Unsaturated flow regime
 Regimes = ["Medium", "Fast", "Slow"]
@@ -20,14 +20,14 @@ gvarnames = list(t for t in species.keys() if (species[t]["State"]=="Active") or
 
 scdict = proc.masterscenarios("Unsaturated") #master dictionary of all spatially heterogeneous scenarios that were run
 horiznodes = 61
-parent_dir = "X:/Richards_flow_big_sat"
-results_dir = "Y:/Home/khurana/4. Publications/Paper3/Figurecodes"
+parent_dir = r"D:\Data\Richards_flow\RF_big_sat_2"
+results_dir = r"C:\Users\swkh9804\OneDrive\Documents\Manuscripts\Paper3\Figurecodes"
 # Default:
-droplist = []#["38","48","72","82","114","116"]
+droplist = []
 Trial = list(t for t,values in scdict.items() if t not in droplist)
 
 # Constants
-yout = -6
+yout = -7
 yin = 6
 vertnodes = 113
 xleft = 0
@@ -40,7 +40,7 @@ por = 0.2
 row = []
 for Reg in Regimes:
     for j in Trial:
-        directory =  os.path.join(parent_dir, Reg + "AR_0")
+        directory = parent_dir
         filename = Reg+"AR_0_RF-A"+str(j)+"_df.npy"
         data = np.load(os.path.join(directory, filename))
         sat = np.mean(data[4,-1,6:-6,:])
@@ -53,19 +53,19 @@ for Reg in Regimes:
 biomassdata = pd.DataFrame.from_records (row, columns = ["Trial", "Variance", "Anisotropy", "Regime", "Chem", "Biomass", "Biomass_contribution", "Mean_saturation"])
 biomassdata.Regime = biomassdata.Regime.replace({"Equal":"Medium"})
 #Load tracer data
-path_tr_data = os.path.join(results_dir,"tracer_11062021.csv")
+path_tr_data = os.path.join(results_dir,"tracer_09082022.csv")
 tr_data = pd.read_csv(path_tr_data)
 tr_data.columns
 
 #Merge the datasets and save
 cdata = pd.merge(biomassdata, tr_data[["Trial", "Regime", "Time", "fraction"]], on = ["Regime", "Trial"])
 
-cdata.to_csv(os.path.join(results_dir,"biomass_with_sat_26092021.csv"), index=False)
+cdata.to_csv(os.path.join(results_dir,"biomass_with_sat_09082022.csv"), index=False)
 
 row = []
 for Reg in Regimes:
     for j in Trial:
-        directory =  os.path.join(parent_dir, Reg + "AR_0")
+        directory =  parent_dir
         filename = Reg+"AR_0_RF-A"+str(j)+"_df.npy"
         data = np.load(os.path.join(directory, filename))
         sat = np.mean(data[4,-1,6:-6,:])
@@ -78,11 +78,11 @@ for Reg in Regimes:
 biomassdata = pd.DataFrame.from_records (row, columns = ["Trial", "Variance", "Anisotropy", "Regime", "Chem", "Biomass", "Biomass_contribution", "Mean_saturation"])
 biomassdata.Regime = biomassdata.Regime.replace({"Equal":"Medium"})
 #Load tracer data
-path_tr_data = os.path.join(results_dir,"tracer_11062021.csv")
+path_tr_data = os.path.join(results_dir,"tracer_09082022.csv")
 tr_data = pd.read_csv(path_tr_data)
 tr_data.columns
 
 #Merge the datasets and save
 cdata = pd.merge(biomassdata, tr_data[["Trial", "Regime", "Time", "fraction"]], on = ["Regime", "Trial"])
 
-cdata.to_csv(os.path.join(results_dir,"biomass_with_sat_26092021.csv"), index=False)
+cdata.to_csv(os.path.join(results_dir,"biomass_with_sat_09082022.csv"), index=False)
