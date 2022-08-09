@@ -43,7 +43,7 @@ for Reg in Regimes:
         directory =  os.path.join(parent_dir)#, Reg + "AR_0")
         filename = Reg+"AR_0_RF-A"+str(j)+"_df.npy"
         data = np.load(os.path.join(directory, filename))
-        sat = np.mean(data[4,-1,yin:yout,:])
+        sat = np.mean(data[4,-1,yin:yout+1,:])
         massfluxin, massfluxout = ssa.massflux(data, yin, yout, xleft, xright, gvarnames, "Unsaturated", vedge, velem, por)
         delmassflux = -1*(massfluxin - massfluxout)
         reldelmassflux = 100*delmassflux/massfluxin
@@ -70,7 +70,7 @@ for Reg in Regimes:
         directory =  os.path.join(parent_dir)#, Reg + "AR_0")
         filename = Reg+"AR_0_RF-A"+str(j)+"_df.npy"
         data = np.load(os.path.join(directory, filename))
-        sat = np.mean(data[4,-1,yin:yout,:])
+        sat = np.mean(data[4,-1,yin:yout+1,:])
         conctime, TotalFlow, Headinlettime = sta.conc_time(data, yin, yout, xleft, xright, vertnodes, gvarnames, "Unsaturated")
         delconc = conctime[-1, yin, :] - conctime[-1,yout,:]
         reldelconc = 100*delconc/conctime[-1,yin,:]

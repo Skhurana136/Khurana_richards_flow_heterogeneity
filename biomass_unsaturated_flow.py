@@ -43,7 +43,7 @@ for Reg in Regimes:
         directory = parent_dir
         filename = Reg+"AR_0_RF-A"+str(j)+"_df.npy"
         data = np.load(os.path.join(directory, filename))
-        sat = np.mean(data[4,-1,6:-6,:])
+        sat = np.mean(data[4,-1,yin:yout+1,:])
         sumbio = ssa.sum_biomass(data, yin, yout, xleft, xright, gvarnames, "Unsaturated")
         total = sum(sumbio)
         for g in gvarnames:
@@ -60,7 +60,7 @@ tr_data.columns
 #Merge the datasets and save
 cdata = pd.merge(biomassdata, tr_data[["Trial", "Regime", "Time", "fraction"]], on = ["Regime", "Trial"])
 
-cdata.to_csv(os.path.join(results_dir,"biomass_with_sat_09082022.csv"), index=False)
+cdata.to_csv(os.path.join(results_dir,"biomass_09082022.csv"), index=False)
 
 row = []
 for Reg in Regimes:
@@ -68,7 +68,7 @@ for Reg in Regimes:
         directory =  parent_dir
         filename = Reg+"AR_0_RF-A"+str(j)+"_df.npy"
         data = np.load(os.path.join(directory, filename))
-        sat = np.mean(data[4,-1,6:-6,:])
+        sat = np.mean(data[4,-1,yin:yout+1,:])
         sumbio = ssa.sum_biomass(data, yin, yout, xleft, xright, gvarnames, "Unsaturated")
         total = sum(sumbio)
         for g in gvarnames:
@@ -85,4 +85,4 @@ tr_data.columns
 #Merge the datasets and save
 cdata = pd.merge(biomassdata, tr_data[["Trial", "Regime", "Time", "fraction"]], on = ["Regime", "Trial"])
 
-cdata.to_csv(os.path.join(results_dir,"biomass_with_sat_09082022.csv"), index=False)
+cdata.to_csv(os.path.join(results_dir,"biomass_09082022.csv"), index=False)

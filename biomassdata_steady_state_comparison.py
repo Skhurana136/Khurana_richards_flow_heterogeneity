@@ -7,9 +7,9 @@ Created on Thu Sep  3 12:05:06 2020
 import os
 import pandas as pd
 
-results_dir = "Y:/Home/khurana/4. Publications/Paper3/Figurecodes"
+results_dir = r"C:\Users\swkh9804\OneDrive\Documents\Manuscripts\Paper3\Figurecodes"
 #Load data
-path_data = os.path.join(results_dir,"biomass_with_sat_26092021.csv")
+path_data = os.path.join(results_dir,"biomass_09082022.csv")
 data = pd.read_csv(path_data)
 data.columns
 data.dtypes
@@ -39,5 +39,5 @@ data['biomass_spatial_fraction'] = data['Biomass']/data['spatial_biomass_base']
 #data['reldelmassflux_temporal_fraction'] = data['reldelmassflux']/data['temporal_reldelmassflux_base']
 data['biomass_contribution_spatial_fraction'] = data['Biomass_contribution']/data['spatial_biomass_contribution_base']
 
-data.to_csv(os.path.join(results_dir,"biomass_comparison_with_sat_26092021.csv"),
+data.to_csv(os.path.join(results_dir,"biomass_comparison_09082022.csv"),
             index = False)

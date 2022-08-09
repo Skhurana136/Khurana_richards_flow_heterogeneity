@@ -8,9 +8,9 @@ import os
 import pandas as pd
 import numpy as np
 
-results_dir = "Y:/Home/khurana/4. Publications/Paper3/Figurecodes"
+results_dir = r"C:\Users\swkh9804\OneDrive\Documents\Manuscripts\Paper3\Figurecodes"
 #Load data
-path_data = os.path.join(results_dir, "massflux_with_sat_26092021.csv")
+path_data = os.path.join(results_dir, "massflux_09082022.csv")
 data = pd.read_csv(path_data)
 data.columns
 data.dtypes
@@ -42,11 +42,11 @@ data['normmassflux_spatial_fraction'] = data['normmassflux']/data['spatial_normm
 data['reldelmassflux_spatial_fraction'] = data['reldelmassflux']/data['spatial_reldelmassflux_base']
 data["Da63"] = np.log10(data.normmassflux)
 
-data.to_csv(os.path.join(results_dir,"massflux_comparison_with_sat_26092021.csv"),
+data.to_csv(os.path.join(results_dir,"massflux_comparison_09082022.csv"),
             index = False)
 
 #Load data
-path_data = os.path.join(results_dir,"concdata_with_sat_26092021.csv")
+path_data = os.path.join(results_dir,"concdata_09082022.csv")
 data = pd.read_csv(path_data)
 data.columns
 data.dtypes
@@ -78,4 +78,4 @@ data['normconc_spatial_fraction'] = data['normconc']/data['spatial_normconc_base
 data['reldelconc_spatial_fraction'] = data['reldelconc']/data['spatial_reldelconc_base']
 data["Da63"] = np.log10(data.normconc)
 
-data.to_csv(os.path.join(results_dir,"conc_comparison_with_sat_26092021.csv"), index = False)
+data.to_csv(os.path.join(results_dir,"conc_comparison_09082022.csv"), index = False)
