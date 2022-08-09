@@ -71,17 +71,170 @@ unsat_data = unsat_da[unsat_da['Chem'].isin (gvarnames)]
 unsat_data["pc_reldelconc_spatial"] = unsat_data.reldelconc_spatial_fraction * 100
 
 #%%
-diff_data_path = os.path.join(uss_dir, "aero_rates_het.csv")
+diff_data_path = os.path.join(uss_dir, "aero_rates_09082022.csv")
 mdiff_data = pd.read_csv (diff_data_path)
 print (mdiff_data.columns)
 print(mdiff_data.rate.unique())
+diff_data = mdiff_data[mdiff_data['rate']=='aeration'].reset_index()
+diff_data.rename(columns={"rate_val": "aeration"}, inplace=True)
+resp_data = mdiff_data[mdiff_data['rate']=='Total_respiration'].reset_index()
+resp_data.rename(columns={"rate_val": "Total_resp"}, inplace=True)
 
-aero_data_path = os.path.join(uss_dir, "DO_consumption_unsat_het.csv")
-aero_data = pd.read_csv (aero_data_path)
-print (aero_data.columns)
-aero_data['fraction%'] = aero_data.fraction*100
-diff_data = mdiff_data[mdiff_data['rate']=='Respiration_diffusion_ratio_total']
-diff_data['fraction%'] = diff_data.fraction*100
+#%%
+aero_data_path = os.path.join(uss_dir, "massflux_08082022.csv")
+mf_data = pd.read_csv (aero_data_path)
+print (mf_data.columns)
+mf_data['fraction%'] = mf_data.fraction*100
+do_data = mf_data[mf_data.Chem=='DO'].reset_index()
+do_diff_data = pd.merge(do_data, diff_data[['Regime', 'Trial', 'DOdiffusion']], on = ['Regime', 'Trial'])
+aero_data = pd.merge(do_diff_data, resp_data[['Regime', 'Trial', 'Total_resp']], on = ['Regime', 'Trial'])
+aero_data["doin_resp_diff"] = -aero_data['massflux_in']+aero_data.DOdiffusion-aero_data.Total_resp
+aero_data["resp_diff"] = aero_data.Total_resp/aero_data.DOdiffusion
+aero_data["resp_sub_diff"] = (aero_data.Total_resp/(aero_data.DOdiffusion-aero_data.massflux_in))
+#%%
+fig, a = plt.subplots(3,2, figsize = (8,8), sharey = 'row', sharex = 'col')
+a[0,0].text(s="A", x = 0.45, y = 11, **titlekw)
+a[0,1].text(s="B", x = 30, y = 11, **titlekw)
+a[1,0].text(s="C", x = 0.45, y = 1.1, **titlekw)
+a[1,1].text(s="D", x = 30, y = 1.1, **titlekw)
+a[2,0].text(s="E", x = 0.45, y = 200, **titlekw)
+a[2,1].text(s="F", x = 30, y = 200, **titlekw)
+a[2,1].set_xlabel ("Residence time\nof solutes (%)", **titlekw)                 
+a[2,0].set_xlabel ("Mean saturation\nin domain", **titlekw)
+a[1,0].set_ylabel("Diffusion (uM d-1)", ha='center', va='center', rotation='vertical', labelpad = 15, **titlekw)
+a[2,0].set_ylabel(r"$\frac{Respiration}{Diffusion}$", ha='center', va='center', rotation='vertical', labelpad = 15, **titlekw)
+#a[0,0].set_xlabel ("")
+a[0,0].set_ylabel("DO consumption\nrate (%)", ha='center', va='center', rotation='vertical', labelpad = 15, **titlekw)
+
+sns.scatterplot(x = 'Mean_saturation', y = 'delmassflux', hue = 'Regime',
+hue_order= ['Slow', 'Medium','Fast'], style = 'Regime',palette= my_pal, data = aero_data, ax = a[0,0])
+sns.scatterplot(x = 'fraction%', y = 'delmassflux', hue = 'Regime',
+hue_order= ['Slow', 'Medium','Fast'], style = 'Regime',palette= my_pal, data = aero_data, ax = a[0,1])
+sns.scatterplot(x = 'Mean_saturation', y = 'DOdiffusion', hue = 'Regime',
+hue_order= ['Slow', 'Medium','Fast'], style = 'Regime',palette= my_pal, data = aero_data, ax = a[1,0])
+sns.scatterplot(x = 'fraction%', y = 'DOdiffusion', hue = 'Regime',
+hue_order= ['Slow', 'Medium','Fast'], style = 'Regime',palette= my_pal, data = aero_data, ax = a[1,1])
+sns.scatterplot(x = 'Mean_saturation', y = 'resp_diff', hue = 'Regime',
+hue_order= ['Slow', 'Medium','Fast'], style = 'Regime',palette= my_pal, data = aero_data, ax = a[2,0])
+sns.scatterplot(x = 'fraction%', y = 'resp_diff', hue = 'Regime',
+hue_order= ['Slow', 'Medium','Fast'], style = 'Regime',palette= my_pal, data = aero_data, ax = a[2,1])
+for all in a.flatten():
+    all.tick_params(**labelkw)
+    all.legend().remove()
+for ax in a[2,:]:
+    ax.tick_params(**labelkw)
+    #ax.set_xscale("log")
+    ax.set_yscale("log")
+plt.legend(title = "Flow regime", title_fontsize = 14, fontsize = 14, loc = (-0.9,-1), ncol = 3)
+picname = os.path.join(op_dir,"Resp_diff_total_Fig_3_diffusion.png")
+plt.savefig(picname, dpi = 300, bbox_inches = 'tight', pad_inches = 0.01)
+
+#%%
+import matplotlib.patches as mpatches
+import matplotlib.lines as mlines
+grey_tri = mlines.Line2D([], [], linestyle = '', marker = "^", markerfacecolor = "grey", markeredgecolor = "grey", markersize=10, label='Nitrate', alpha = 0.5)
+grey_dot = mlines.Line2D([], [], linestyle = '', marker = "o", markerfacecolor = "grey", markeredgecolor = "grey", markersize=10, label='DOC', alpha = 0.5)
+grey_square = mlines.Line2D([], [], linestyle = '', marker = "s", markerfacecolor = "grey", markeredgecolor = "grey",markersize=10, label='Ammonium', alpha = 0.5)
+blue_patch = mpatches.Patch(color="steelblue", label= 'Ratio>10', alpha = 0.5)
+orange_patch = mpatches.Patch(color = "orange", label =  '1<Ratio<10', alpha = 0.5)
+red_patch = mpatches.Patch(color="green", label= 'Ratio~1', alpha = 0.5)
+chem_leg_list = [grey_tri, grey_dot, grey_square]
+patchlist = [blue_patch, orange_patch, red_patch]
+
+gvarnames = ["DO", "DOC", "Ammonium", "Nitrate"]
+#r_d_ratio = mdiff_data[mdiff_data['rate']=="Respiration_diffusion_ratio_total"].reset_index()
+r_d_unsat_data = pd.merge(aero_data[['Regime','Trial', 'Total_resp', 'DOdiffusion','resp_diff']], unsat_data, on = ['Regime','Trial']).reset_index()
+#r_d_unsat_data['fraction%'] = r_d_unsat_data.fraction*100
+r_d_unsat_data.loc[r_d_unsat_data['resp_diff']>=10, "diff"] = int(0)
+r_d_unsat_data.loc[(r_d_unsat_data['resp_diff']>=1) & (r_d_unsat_data['resp_diff']<10), "diff"] = int(1)
+r_d_unsat_data.loc[(r_d_unsat_data['resp_diff']<1), "diff"] = int(2)
+gvarnames.remove("DO")
+#%%
+fig, axes = plt.subplots(2,1,figsize=[6, 8], sharex = True)
+ax = axes[0]
+axins = axes[1]
+ax.text(s="A", x = 30, y = 100000, **titlekw)
+axins.text(s="B", x = 30, y = 180, **titlekw)
+#a[0,1].text(s="B", x = 30, y = 140, **titlekw)
+for c in gvarnames:
+    subset_1 = r_d_unsat_data[r_d_unsat_data['Chem'] == c]
+    frac = gvarnames.index(c)
+    for d_frac in [0,1,2]:
+        subset = subset_1[subset_1['diff']==d_frac]
+        if subset.shape[0]<1:
+            pass                          
+        else:
+            y = subset["pc_reldelconc_spatial"]
+            X = subset[["fraction"]]
+            ax.scatter(X*100, y, c = my_pal[d_frac], marker = marklist[frac],alpha = 0.5, label = c)
+ax.vlines(x = 30, ymin = 10, ymax = 200, linestyles = 'dashed', colors = 'grey')
+ax.vlines(x = 102, ymin = 10, ymax = 200, linestyles = 'dashed', colors = 'grey')
+ax.hlines(y = 200, xmin = 30, xmax = 102, linestyles = 'dashed', colors = 'grey')
+ax.hlines(y = 10, xmin = 30, xmax = 102, linestyles = 'dashed', colors = 'grey')
+ax.set_yscale("log")
+ax.tick_params(**labelkw)
+ax.set_ylabel("Removal of reactive\nspecies (%)", ha='center', va='center', rotation='vertical', labelpad = 12, **titlekw)
+
+for c in gvarnames:
+    subset_1 = r_d_unsat_data[r_d_unsat_data['Chem'] == c]
+    frac = gvarnames.index(c)
+    for d_frac in [0,1,2]:
+        subset = subset_1[subset_1['diff']==d_frac]
+        if subset.shape[0]<1:
+            pass                          
+        else:
+            y = subset["pc_reldelconc_spatial"]
+            X = subset[["fraction"]]
+            axins.scatter(X*100, y, c = my_pal[d_frac], marker = marklist[frac],alpha = 0.5, label = c)
+axins.set_ylim(10,200)
+plt.tick_params(**labelkw)
+axins.set_ylabel("Removal of reactive\nspecies (%)", ha='center', va='center', rotation='vertical', labelpad = 15, **titlekw)
+axins.set_xlabel ("Residence time of solutes (%)", **titlekw)
+plt.tick_params(**labelkw)
+legend_flow = plt.legend(handles=chem_leg_list, ncol = 3,
+        bbox_to_anchor=(0.5, -0.35),
+        loc="center",
+        title="Chemical",
+        fontsize=14, title_fontsize = 14)
+plt.legend(handles=patchlist, ncol = 3,
+        bbox_to_anchor=(0.5, -0.6),
+        loc="center",
+        title=r"$\frac{Respiration}{Diffusion}$",
+        fontsize=14, title_fontsize = 14)
+plt.gca().add_artist(legend_flow)
+picname = os.path.join(op_dir,"r_d_ratio_Fig_4_Unsaturated_chem_removal.png")
+plt.savefig(picname, dpi = 300, bbox_inches = 'tight', pad_inches = 0.1)
+#%%
+for c in gvarnames:
+    subset_1 = r_d_unsat_data[r_d_unsat_data['Chem'] == c]
+    frac = gvarnames.index(c)
+    for d_frac in [0,1,2]:
+        subset = subset_1[subset_1['diff']==d_frac]
+        if subset.shape[0]<1:
+            pass
+        else:
+            y = subset["pc_reldelconc_spatial"]
+            X = subset[["fraction"]]
+            plt.scatter(X*100, y, c = my_pal[d_frac], marker = marklist[frac],alpha = 0.5, label = c)
+plt.xlabel ("Residence time of solutes (%)", **titlekw)
+plt.ylabel("Removal of reactive species (%)", ha='center', va='center', rotation='vertical', labelpad = 10, **titlekw)
+locs, labels1 = plt.yticks()
+#plt.yscale("log")
+plt.ylim((0,200))
+plt.tick_params(**labelkw)
+legend_flow = plt.legend(handles=chem_leg_list, ncol = 3,
+        bbox_to_anchor=(0.5, -0.5),
+        loc="center",
+        title="Chemical",
+        fontsize=14, title_fontsize = 14)
+plt.legend(handles=patchlist, ncol = 3,
+        bbox_to_anchor=(0.5, -0.8),
+        loc="center",
+        title="Respiration vs Diffusion",
+        fontsize=14, title_fontsize = 14)
+plt.gca().add_artist(legend_flow)
+picname = os.path.join(op_dir,"r_d_ratio_Fig_4_2_Unsaturated_chem_removal.png")
+#plt.savefig(picname, dpi = 300, bbox_inches = 'tight', pad_inches = 0.1)
 
 #%%
 fig, a = plt.subplots(2,2, figsize = (8,8), sharey = 'row', sharex = 'col')
@@ -110,7 +263,7 @@ for sec_row in a[1,:]:
     sec_row.set_yscale("log")
 plt.legend(title = "Flow regime", title_fontsize = 14, fontsize = 14, loc = (-0.9,-0.6), ncol = 3)
 picname = os.path.join(op_dir,"Resp_diff_total_Fig_3_diffusion.png")
-plt.savefig(picname, dpi = 300, bbox_inches = 'tight', pad_inches = 0.01)
+#plt.savefig(picname, dpi = 300, bbox_inches = 'tight', pad_inches = 0.01)
 
 #%%
 import matplotlib.patches as mpatches
@@ -162,7 +315,7 @@ plt.legend(handles=patchlist, ncol = 3,
         fontsize=14, title_fontsize = 14)
 plt.gca().add_artist(legend_flow)
 picname = os.path.join(op_dir,"r_d_ratio_Fig_4_2_Unsaturated_chem_removal.png")
-plt.savefig(picname, dpi = 300, bbox_inches = 'tight', pad_inches = 0.1)
+#plt.savefig(picname, dpi = 300, bbox_inches = 'tight', pad_inches = 0.1)
 
 #%%
 for c in gvarnames:
