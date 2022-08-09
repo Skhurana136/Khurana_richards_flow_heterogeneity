@@ -23,7 +23,7 @@ scdict = proc.masterscenarios("Unsaturated") #master dictionary of all spatially
 # Default:
 mTrial = list(t for t,values in scdict.items())
 # Constants
-yout = -6
+yout = -7
 yin = 6
 xleft = 0
 xright = -1
