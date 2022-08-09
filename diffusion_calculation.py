@@ -129,9 +129,10 @@ netdorem = pd.DataFrame.from_records(row, columns = ["Regime", "Trial", "Chem","
 
 sat_dorem = pd.merge(mfdata_comparison, netdorem, on = ["Regime", "Trial", "Chem"])
 
+all_rates = list(sat_dorem.rate.unique())
 for r in Regimes:
     for t in Trial:
-        for c in aerorates:
+        for c in all_rates:
             if c=='DOdiffusion':
                 c = "aeration"
             spat_n_base = sat_dorem.loc[(sat_dorem.Regime == r) & (sat_dorem.rate == c) & (sat_dorem.Trial == 'H')]['rate_val'].values[0]
