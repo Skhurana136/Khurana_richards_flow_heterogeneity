@@ -131,11 +131,4 @@ sat_dorem = pd.merge(mfdata_comparison, netdorem, on = ["Regime", "Trial", "Chem
 
 sat_dorem.head()
 
-for r in Regimes:
-    base = sat_dorem[(sat_dorem['Regime']==r) & (sat_dorem['Trial']=="H")]["aeration"].values[0]
-    for t in Trial:
-        sat_dorem.loc[(sat_dorem['Regime']==r) & (sat_dorem['Trial']==t),"aeration_base"]=base
-sat_dorem['aeration_fraction'] = sat_dorem['aeration']/sat_dorem['aeration_base']
-sat_dorem['aeration_fraction%'] = sat_dorem['aeration_fraction']*100
-
 sat_dorem.to_csv(os.path.join(data_dir,"aero_rates_09082022.csv"), index =False)
