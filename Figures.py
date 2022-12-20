@@ -58,6 +58,7 @@ gvarnames = ["DO", "DOC", "Ammonium", "Nitrate"]
 
 unbio_file = os.path.join(uss_dir,"biomass_comparison_09082022.csv")#biomass_comparison_03082021.csv")
 unbio_data = pd.read_csv(unbio_file)
+#%%
 #Plotting
 species = ["Immobile active aerobic degraders", "Immobile active ammonia oxidizers","Immobile active nitrate reducers"]
 labels = ["Aerobic degraders", "Ammonia oxidizers","Nitrate reducers"]
@@ -185,7 +186,7 @@ a[1].text(s="B", x = 30, y = 900, **titlekw)
 a[2].text(s="C", x = 30, y = 900, **titlekw)
 a[0].set_title("DO consumption\nrate",  **titlekw)
 a[1].set_title("Aeration\nrate",  **titlekw)
-a[2].set_title(r"$\frac{Respiration}{Diffusion}$",  **titlekw)
+a[2].set_title(r"$\frac{Respiration}{Aeration}$",  **titlekw)
 a[0].set_ylabel("Normalized with\nbase case (%)",  **titlekw)
 
 sns.scatterplot(x = 'fraction%', y =  'rate_spatial_fraction%', hue = 'Regime',
@@ -214,6 +215,8 @@ r_d_unsat_data['pc_reldelconc_spatial'] = r_d_unsat_data.reldelconc_spatial_frac
 r_d_unsat_data.loc[r_d_unsat_data['resp_diff']>=10, "diff"] = int(0)
 r_d_unsat_data.loc[(r_d_unsat_data['resp_diff']>=1) & (r_d_unsat_data['resp_diff']<10), "diff"] = int(1)
 r_d_unsat_data.loc[(r_d_unsat_data['resp_diff']<1), "diff"] = int(2)
+gvarnames = ["DOC", "Ammonium", "Nitrate"]
+marklist = ['o', 's', '^']
 grey_tri = mlines.Line2D([], [], linestyle = '', marker = "^", markerfacecolor = "grey", markeredgecolor = "grey", markersize=10, label='Nitrate', alpha = 0.5)
 grey_dot = mlines.Line2D([], [], linestyle = '', marker = "o", markerfacecolor = "grey", markeredgecolor = "grey", markersize=10, label='DOC', alpha = 0.5)
 grey_square = mlines.Line2D([], [], linestyle = '', marker = "s", markerfacecolor = "grey", markeredgecolor = "grey",markersize=10, label='Ammonium', alpha = 0.5)
@@ -230,7 +233,7 @@ axins.text(s="B", x = 30, y = 180, **titlekw)
 #a[0,1].text(s="B", x = 30, y = 140, **titlekw)
 for c in gvarnames:
     subset_1 = r_d_unsat_data[r_d_unsat_data['Chem'] == c]
-    frac = gvarnames.index(c)
+    c_idx = gvarnames.index(c)
     for d_frac in [0,1,2]:
         subset = subset_1[subset_1['diff']==d_frac]
         if subset.shape[0]<1:
@@ -238,7 +241,7 @@ for c in gvarnames:
         else:
             y = subset["pc_reldelconc_spatial"]
             X = subset[["fraction"]]
-            ax.scatter(X*100, y, c = my_pal[d_frac], marker = marklist[frac],alpha = 0.5, label = c)
+            ax.scatter(X*100, y, c = my_pal[d_frac], marker = marklist[c_idx],alpha = 0.5, label = c)
 ax.vlines(x = 30, ymin = 10, ymax = 200, linestyles = 'dashed', colors = 'grey')
 ax.vlines(x = 102, ymin = 10, ymax = 200, linestyles = 'dashed', colors = 'grey')
 ax.hlines(y = 200, xmin = 30, xmax = 102, linestyles = 'dashed', colors = 'grey')
@@ -270,7 +273,7 @@ legend_flow = plt.legend(handles=chem_leg_list, ncol = 3,
 plt.legend(handles=patchlist, ncol = 3,
         bbox_to_anchor=(0.5, -0.62),
         loc="center",
-        title=r"$\frac{Respiration}{Diffusion}$",
+        title=r"$\frac{Respiration}{Aeration}$",
         fontsize=14, title_fontsize = 14)
 plt.gca().add_artist(legend_flow)
 picname = os.path.join(op_dir,"Fig_4_Unsaturated_chem_removal.png")
