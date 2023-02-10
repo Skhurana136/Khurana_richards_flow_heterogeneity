@@ -204,9 +204,9 @@ for ax in a[:]:
     ax.set_yscale("log")
 plt.legend(title = "Flow regime", title_fontsize = 14, fontsize = 14, loc = (-1.75,-0.7), ncol = 3)
 picname = os.path.join(op_dir,"Fig_3_respiration_aeration.png")
-plt.savefig(picname, dpi = 300, bbox_inches = 'tight', pad_inches = 0.01)
+#plt.savefig(picname, dpi = 300, bbox_inches = 'tight', pad_inches = 0.01)
 picname = os.path.join(op_dir,"Fig_3_respiration_aeration.png")
-plt.savefig(picname, dpi = 300, bbox_inches = 'tight', pad_inches = 0.01)
+#plt.savefig(picname, dpi = 300, bbox_inches = 'tight', pad_inches = 0.01)
 
 #%%
 r_d_unsat_data = pd.merge(resp_aer_data[['Regime','Trial', 'resp_diff']], unsat_conc_data, on = ['Regime','Trial']).reset_index()
@@ -279,7 +279,7 @@ plt.gca().add_artist(legend_flow)
 picname = os.path.join(op_dir,"Fig_4_Unsaturated_chem_removal.png")
 plt.savefig(picname, dpi = 300, bbox_inches = 'tight', pad_inches = 0.1)
 picname = os.path.join(op_dir,"Fig_4_Unsaturated_chem_removal.pdf")
-plt.savefig(picname, dpi = 300, bbox_inches = 'tight', pad_inches = 0.1)
+#plt.savefig(picname, dpi = 300, bbox_inches = 'tight', pad_inches = 0.1)
 #%%
 fig, axes = plt.subplots(1,2, figsize = (7,3), sharex = True, sharey = True)
 sns.scatterplot(data = unsat_sub, x = "eff_sat", y = "State_Ratio", hue = "Regime",  hue_order = ["Slow", "Medium", "Fast"],
@@ -330,7 +330,7 @@ xright = -1
 vertnodes = 113
 velem = 0.005
 vedge = 0.0025
-d = r"D:\Data\Richards_flow\RF_big_sat_2"
+d = r"E:\Data\Richards_flow\RF_big_sat_2"
 Regimes = ["Slow", "Medium", "Fast"]
 trialist = proc.masterscenarios("Unsaturated")
 Trial = ["50", "84", "118"]
@@ -412,9 +412,9 @@ plt.legend(handles = patchlist, ncol = 3, fontsize = legendsize,
            loc = 'lower right')
 
 picname = os.path.join(op_dir, "FigureS1_dissolved_species_1D.png")
-plt.savefig(picname, dpi = 300, bbox_inches = 'tight', pad_inches = 0.1)
+#plt.savefig(picname, dpi = 300, bbox_inches = 'tight', pad_inches = 0.1)
 picname = os.path.join(op_dir, "FigureS1_dissolved_species_1D.pdf")
-plt.savefig(picname, dpi = 300, bbox_inches = 'tight', pad_inches = 0.1)
+#plt.savefig(picname, dpi = 300, bbox_inches = 'tight', pad_inches = 0.1)
 
 #%%
 ## Figure S2: 1D profile biomass
@@ -443,7 +443,7 @@ xright = -1
 vertnodes = 113
 velem = 0.005
 vedge = 0.0025
-d = r"D:\Data\Richards_flow\RF_big_sat_2"
+d = r"E:\Data\Richards_flow\RF_big_sat_2"
 Regimes = ["Slow", "Medium", "Fast"]
 trialist = proc.masterscenarios("Unsaturated")
 Trial = ["50", "84", "118"]
@@ -524,15 +524,16 @@ for t,a in zip(Trial[::-1],range(3)):
 plt.legend(handles = patchlist, ncol = 3, fontsize = legendsize,bbox_to_anchor = (-0.6,-0.6),loc = 'lower center')
 
 picname = os.path.join(op_dir, "FigureS2_biomass_1D.png")
-plt.savefig(picname, dpi = 300, bbox_inches = 'tight', pad_inches = 0.1)
+#plt.savefig(picname, dpi = 300, bbox_inches = 'tight', pad_inches = 0.1)
 picname = os.path.join(op_dir, "FigureS2_biomass_1D.pdf")
-plt.savefig(picname, dpi = 300, bbox_inches = 'tight', pad_inches = 0.1)
+#plt.savefig(picname, dpi = 300, bbox_inches = 'tight', pad_inches = 0.1)
 
 #%%
 ## Figure S3: Heatmap of biomass contributors
 unbio_data['Contribution_pc'] = unbio_data.Biomass_contribution*100
 base_bio =  unbio_data[unbio_data.Trial=='H']
 base_bio_pivot = pd.pivot(data = base_bio[['Regime', 'Chem', 'Contribution_pc']], index = ['Chem'], columns = ['Regime'], values = 'Contribution_pc')
+base_bio_pivot = base_bio_pivot[['Slow', 'Medium', 'Fast']]
 sns.heatmap(base_bio_pivot, cmap = 'YlGnBu')
 plt.xlabel ("Flow regime")
 plt.ylabel ("Microbial group")
@@ -546,7 +547,7 @@ plt.savefig(picname, dpi = 300, bbox_inches = 'tight', pad_inches = 0.1)
 import matplotlib.gridspec as gridspec
 Regimes = ["Slow", "Medium", "Fast"]
 trialist = proc.masterscenarios("Unsaturated")
-Trial = ["50", "72", "118"]
+Trial = ["50", "84", "118"]
 species = proc.speciesdict("Unsaturated")
 gvarnames = ["Sat"]
 gindx = 4
@@ -563,7 +564,7 @@ for t in Trial:
     data = np.load(file)
     axe = axes[Trial.index(t),0]
     velocity = abs(data[velindex, -1, yin:yout+1, :])
-    sns.heatmap(velocity, cmap = colorscheme, ax = axe, cbar = False)
+    sns.heatmap(velocity, cmap = colorscheme, vmin = np.min(velocity), vmax = np.max(velocity),ax = axe, cbar = False)
     axe.set_ylabel ("Variance: " + str(trialist[t]["Het"])+ " &\nAnisotropy: " + str(trialist[t]["Anis"]),
                        rotation = "vertical", fontsize = 16, ha = "center")
     if i ==0:
@@ -580,10 +581,23 @@ for t in Trial:
             axer.set_title(r + "\nflow", fontsize = 16, ha = "center")
         axer.set_xticks([])
         axer.set_yticks([])
+    i+=1
 picname = os.path.join(op_dir, "FigureS4_saturation_heatmap.png")
 plt.savefig(picname, dpi = 300, bbox_inches = 'tight', pad_inches = 0.1)
 picname = os.path.join(op_dir, "FigureS4_saturation_heatmap.pdf")
 plt.savefig(picname, dpi = 300, bbox_inches = 'tight', pad_inches = 0.1)
+#%%
+#Trial = ["50", "84", "118"]
+#for t in Trial:
+#    for r in ["Slow", "Medium", "Fast"]:
+#        file = os.path.join(d, r +"AR_0_RF-A" + str(t)+ "_df.npy")
+#        data = np.load(file)
+#        axe = axes[Trial.index(t),0]
+#        velocity = abs(data[velindex, -1, yin:yout+1, :])
+#        print(r, np.min(velocity)/np.max(velocity))
+#        plt.figure()
+#        sns.heatmap(velocity, vmin = np.min(velocity), vmax = (np.max(velocity)))
+
 #%%
 #Figure S6: Distribution of dissolved species heatmap
 import matplotlib.gridspec as gridspec
