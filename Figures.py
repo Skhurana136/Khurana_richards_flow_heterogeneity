@@ -56,7 +56,7 @@ trialist = proc.masterscenarios("Unsaturated")
 species = proc.speciesdict("Unsaturated")
 gvarnames = ["DO", "DOC", "Ammonium", "Nitrate"]
 
-unbio_file = os.path.join(uss_dir,"biomass_comparison_09082022.csv")#biomass_comparison_03082021.csv")
+unbio_file = os.path.join(uss_dir,"biomass_comparison_09082022.csv")
 unbio_data = pd.read_csv(unbio_file)
 #%%
 #Plotting
@@ -120,7 +120,9 @@ plt.xlabel ("Chemical species", **titlekw)
 plt.ylabel("Relative removal (%)", ha='center', va='center', rotation='vertical', labelpad = 10, **titlekw)
 plt.tick_params(**labelkw, rotation = 30)
 plt.legend(title = "Flow regime", title_fontsize = 14, fontsize = 14, loc = (1.05,0.25))
-picname = os.path.join(op_dir,"Fig_1_Chem_removal.png")
+picname = os.path.join(op_dir,"Figure_1_Chem_removal.png")
+plt.savefig(picname, dpi = 300, bbox_inches = 'tight', pad_inches = 0.01)
+picname = os.path.join(op_dir,"Figure_1_Chem_removal.pdf")
 plt.savefig(picname, dpi = 300, bbox_inches = 'tight', pad_inches = 0.01)
 
 #%%
@@ -153,7 +155,9 @@ plt.xticks(xlocs, ["H", "0.1:2","0.1:5","0.1:10","1:2","1:5","1:10","5:10","5:2"
 plt.gca().yaxis.set_major_formatter(mpl.ticker.StrMethodFormatter('{x:,.0f}'))
 plt.tick_params(labelsize = 12)
 plt.legend(title = 'Flow regime', fontsize = 12, title_fontsize = 12)
-picname = os.path.join(op_dir,"Fig_2_tracer_breakthrough.png")
+picname = os.path.join(op_dir,"Figure_2_tracer_breakthrough.png")
+plt.savefig(picname, dpi = 300, bbox_inches = 'tight', pad_inches = 0.01)
+picname = os.path.join(op_dir,"Figure_2_tracer_breakthrough.pdf")
 plt.savefig(picname, dpi = 300, bbox_inches = 'tight', pad_inches = 0.01)
 #%%
 diff_data_path = os.path.join(uss_dir, "aero_rates_09082022.csv")
@@ -203,10 +207,10 @@ for ax in a[:]:
     ax.tick_params(**labelkw)
     ax.set_yscale("log")
 plt.legend(title = "Flow regime", title_fontsize = 14, fontsize = 14, loc = (-1.75,-0.7), ncol = 3)
-picname = os.path.join(op_dir,"Fig_3_respiration_aeration.png")
-#plt.savefig(picname, dpi = 300, bbox_inches = 'tight', pad_inches = 0.01)
-picname = os.path.join(op_dir,"Fig_3_respiration_aeration.png")
-#plt.savefig(picname, dpi = 300, bbox_inches = 'tight', pad_inches = 0.01)
+picname = os.path.join(op_dir,"Figure_3_respiration_aeration.png")
+plt.savefig(picname, dpi = 300, bbox_inches = 'tight', pad_inches = 0.01)
+picname = os.path.join(op_dir,"Figure_3_respiration_aeration.pdf")
+plt.savefig(picname, dpi = 300, bbox_inches = 'tight', pad_inches = 0.01)
 
 #%%
 r_d_unsat_data = pd.merge(resp_aer_data[['Regime','Trial', 'resp_diff']], unsat_conc_data, on = ['Regime','Trial']).reset_index()
@@ -276,15 +280,15 @@ plt.legend(handles=patchlist, ncol = 3,
         title=r"$\frac{Respiration}{Aeration}$",
         fontsize=14, title_fontsize = 14)
 plt.gca().add_artist(legend_flow)
-picname = os.path.join(op_dir,"Fig_4_Unsaturated_chem_removal.png")
+picname = os.path.join(op_dir,"Figure_4_Unsaturated_chem_removal.png")
 plt.savefig(picname, dpi = 300, bbox_inches = 'tight', pad_inches = 0.1)
-picname = os.path.join(op_dir,"Fig_4_Unsaturated_chem_removal.pdf")
-#plt.savefig(picname, dpi = 300, bbox_inches = 'tight', pad_inches = 0.1)
+picname = os.path.join(op_dir,"Figure_4_Unsaturated_chem_removal.pdf")
+plt.savefig(picname, dpi = 300, bbox_inches = 'tight', pad_inches = 0.1)
 #%%
 fig, axes = plt.subplots(1,2, figsize = (7,3), sharex = True, sharey = True)
-sns.scatterplot(data = unsat_sub, x = "eff_sat", y = "State_Ratio", hue = "Regime",  hue_order = ["Slow", "Medium", "Fast"],
+sns.scatterplot(data = unsat_sub, x = "Sat", y = "State_Ratio", hue = "Regime",  hue_order = ["Slow", "Medium", "Fast"],
                 style = "Regime", palette = my_pal, ax = axes.flat[0])
-sns.scatterplot(data = unsat_sub, x = "eff_sat", y = "Loc_Ratio", hue = "Regime", hue_order = ["Slow", "Medium", "Fast"],
+sns.scatterplot(data = unsat_sub, x = "Sat", y = "Loc_Ratio", hue = "Regime", hue_order = ["Slow", "Medium", "Fast"],
                 style = "Regime",palette = my_pal, ax = axes.flat[1], legend=False)
 axes.flat[0].set_title("Ratio of active and\ninactive biomass", **titlekw)
 axes.flat[1].set_title("Ratio of immobile and\nmobile biomass", **titlekw)
@@ -299,7 +303,9 @@ axes.flat[1].text(s="B", x = 0.4, y = 9, **titlekw)
 axes.flat[0].legend(title="Flow regime", fontsize = 14, title_fontsize = 14, loc = (0.33, -0.55), ncol = 3)
 for a in axes[:]:
     a.tick_params(labelsize = 12)
-picname = os.path.join(op_dir,"Fig_5_Unsaturated_fractions_microbes.png")
+picname = os.path.join(op_dir,"Figure_5_Unsaturated_fractions_microbes.png")
+plt.savefig(picname, dpi = 300, bbox_inches = 'tight', pad_inches = 0.1)
+picname = os.path.join(op_dir,"Figure_5_Unsaturated_fractions_microbes.pdf")
 plt.savefig(picname, dpi = 300, bbox_inches = 'tight', pad_inches = 0.1)
 
 #%%
